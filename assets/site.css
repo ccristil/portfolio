@@ -3,6 +3,10 @@ nav {
     font-weight: bold;
 }
 
+.monospace {
+    font-family: 'Courier New', monospace;
+}
+
 .banner {
     position: relative;
     width: 100%;
@@ -79,8 +83,73 @@ section h2:hover::after {
     cursor: pointer;
 }
 
-.badge-lg:hover {
-    transform: translateY(-3px);
-    background-color: #8b5cf6 !important;
-    box-shadow: 0 4px 8px rgba(111, 66, 193, 0.4);
+/*.badge-lg:hover {*/
+/*    transform: translateY(-3px);*/
+/*    background-color: #8b5cf6 !important;*/
+/*    box-shadow: 0 4px 8px rgba(111, 66, 193, 0.4);*/
+/*}*/
+
+.horizontal-timeline .items {
+    border-top: 3px solid #e9ecef;
+}
+
+.horizontal-timeline .items .items-list {
+    display: block;
+    position: relative;
+    text-align: center;
+    padding-top: 70px;
+    margin-right: 0;
+}
+
+.horizontal-timeline .items .items-list:before {
+    content: "";
+    position: absolute;
+    height: 36px;
+    border-right: 2px dashed #dee2e6;
+    top: 0;
+}
+
+.horizontal-timeline .items .items-list .event-date {
+    position: absolute;
+    top: 36px;
+    left: 0;
+    right: 0;
+    width: 75px;
+    margin: 0 auto;
+    font-size: 0.9rem;
+    padding-top: 8px;
+}
+
+@media (min-width: 1140px) {
+    .horizontal-timeline .items .items-list {
+        display: inline-block;
+        width: 24%;
+        padding-top: 45px;
+    }
+
+    .horizontal-timeline .items .items-list .event-date {
+        top: -40px;
+    }
+}
+
+.education-column {
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 768px) {
+    .education-column {
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        padding-bottom: 2rem;
+        margin-bottom: 2rem;
+    }
+}
+
+.card {
+    transition: transform 0.1s ease;
+    transform-style: preserve-3d;
+}
+
+.card:hover {
+    transform: perspective(1000px) rotateX(var(--rotate-x, 0deg)) rotateY(var(--rotate-y, 0deg));
 }
