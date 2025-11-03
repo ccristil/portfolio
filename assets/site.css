@@ -71,3 +71,16 @@ section h2:hover::after {
     width: 100%;
 }
 
+.badge-lg {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: #6f42c1 !important;
+    transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.badge-lg:hover {
+    transform: translateY(-3px);
+    background-color: #8b5cf6 !important;
+    box-shadow: 0 4px 8px rgba(111, 66, 193, 0.4);
+}
