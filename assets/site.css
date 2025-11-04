@@ -83,12 +83,6 @@ section h2:hover::after {
     cursor: pointer;
 }
 
-/*.badge-lg:hover {*/
-/*    transform: translateY(-3px);*/
-/*    background-color: #8b5cf6 !important;*/
-/*    box-shadow: 0 4px 8px rgba(111, 66, 193, 0.4);*/
-/*}*/
-
 .horizontal-timeline .items {
     border-top: 3px solid #e9ecef;
 }
@@ -206,4 +200,44 @@ body, html {
 .container, .container-fluid, .row {
     max-width: 100%;
     overflow-x: hidden;
+}
+
+.horizontal-timeline {
+    padding-top: 3rem;
+    overflow-x: auto;
+    overflow-y: visible;
+}
+
+#experience {
+    overflow: visible !important;
+}
+
+#experience .container-fluid {
+    overflow: visible !important;
+    padding-top: 0;
+}
+
+.horizontal-timeline .event-date {
+    position: relative;
+    top: 0;
+    margin-bottom: 1rem;
+    white-space: nowrap;
+    display: inline-block;
+}
+
+@media (max-width: 768px) {
+    .horizontal-timeline {
+        padding-top: 4rem;
+    }
+
+    .horizontal-timeline .items {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .horizontal-timeline .items-list {
+        display: block;
+        width: 100%;
+    }
 }
