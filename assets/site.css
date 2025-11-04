@@ -153,3 +153,27 @@ section h2:hover::after {
 .card:hover {
     transform: perspective(1000px) rotateX(var(--rotate-x, 0deg)) rotateY(var(--rotate-y, 0deg));
 }
+
+.btn-github {
+    color: #6f42c1;
+    border-color: #6f42c1;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.btn-github:hover {
+    background-color: #6f42c1;
+    color: white;
+    border-color: #6f42c1;
+}
+
+.btn-colab {
+    color: #F9AD00;
+    border-color: #F9AD00;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.btn-colab:hover {
+    background-color: #F9AD00;
+    border-color: #F9AD00;
+    color: white;
+}
