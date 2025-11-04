@@ -226,18 +226,52 @@ body, html {
 }
 
 @media (max-width: 768px) {
-    .horizontal-timeline {
-        padding-top: 4rem;
+    /* Hide the horizontal line */
+    .horizontal-timeline::before {
+        display: none !important;
+    }
+
+    /* Hide the vertical dotted lines */
+    .horizontal-timeline .items-list::before,
+    .horizontal-timeline .items-list::after {
+        display: none !important;
     }
 
     .horizontal-timeline .items {
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
+        padding: 0;
+        margin: 0;
     }
 
     .horizontal-timeline .items-list {
         display: block;
         width: 100%;
+        margin-bottom: 1.5rem;
+    }
+
+    .horizontal-timeline .items-list .px-4 {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 0.5rem;
+        padding: 1.5rem !important;
+        border-left: 4px solid;
+    }
+
+    .horizontal-timeline .items-list:nth-child(1) .px-4 {
+        border-left-color: #0dcaf0; /* info color */
+    }
+
+    .horizontal-timeline .items-list:nth-child(2) .px-4 {
+        border-left-color: #198754; /* success color */
+    }
+
+    .horizontal-timeline .items-list:nth-child(3) .px-4 {
+        border-left-color: #dc3545; /* danger color */
+    }
+
+    .horizontal-timeline .items-list:nth-child(4) .px-4 {
+        border-left-color: #ffc107; /* warning color */
+    }
+
+    .horizontal-timeline .event-date {
+        margin-bottom: 0.75rem;
     }
 }
