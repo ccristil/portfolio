@@ -196,3 +196,14 @@ section h2:hover::after {
         padding: 0.4rem 0.8rem;
     }
 }
+
+
+body, html {
+    overflow-x: hidden;
+    max-width: 100%;
+}
+
+.container, .container-fluid, .row {
+    max-width: 100%;
+    overflow-x: hidden;
+}
