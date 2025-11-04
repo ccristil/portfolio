@@ -225,7 +225,7 @@ body, html {
     display: inline-block;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 992px) {
     /* Hide the horizontal line */
     .horizontal-timeline::before {
         display: none !important;
