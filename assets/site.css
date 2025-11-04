@@ -177,3 +177,22 @@ section h2:hover::after {
     border-color: #F9AD00;
     color: white;
 }
+
+@media (max-width: 768px) {
+    .banner-title {
+        font-size: 2rem;
+    }
+
+    .banner-subtitle {
+        font-size: 1rem;
+    }
+
+    section {
+        padding: 2rem 1rem !important;
+    }
+
+    .badge-lg {
+        font-size: 0.875rem;
+        padding: 0.4rem 0.8rem;
+    }
+}
