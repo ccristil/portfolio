@@ -1,0 +1,8 @@
+title: Cristian Cruz
+description: Portfolio & Blog
+
+# Collections for blog posts
+collections:
+  posts:
+    output: true
+    permalink: /blog/:title/
