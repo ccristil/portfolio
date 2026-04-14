@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cristian Cruz | Portfolio</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        purple: {
+                            400: '#8b5cf6',
+                            500: '#6f42c1',
+                            600: '#5a32a3',
+                        },
+                        colab: '#F9AD00',
+                        info: '#0dcaf0',
+                        success: '#198754',
+                        danger: '#dc3545',
+                        warning: '#ffc107',
+                    },
+                    fontFamily: {
+                        mono: ['"Courier New"', 'monospace'],
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <script src="https://kit.fontawesome.com/98005e09e4.js" crossorigin="anonymous"></script>
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💻</text></svg>">
+
+    <!-- PostHog -->
+    <script>
+        !function(t,e){var o,n,p,r;e.__SV||(window.posthog && window.posthog.__loaded)||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init Rr Mr fi Cr Ar ci Tr Fr capture Mi calculateEventProperties Lr register register_once register_for_session unregister unregister_for_session Hr getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey displaySurvey canRenderSurvey canRenderSurveyAsync identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty Ur jr createPersonProfile zr kr Br opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing get_explicit_consent_status is_capturing clear_opt_in_out_capturing Dr debug M Nr getPageViewId captureTraceFeedback captureTraceMetric $r".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+        posthog.init('phc_PBK3OOIE9TNmNIMI1eqqTgPzLouiLKqmIXv0RMnejq9', {
+            api_host: 'https://us.i.posthog.com',
+            defaults: '2025-05-24',
+            person_profiles: 'identified_only',
+        })
+    </script>
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-41PBL71TYD"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-41PBL71TYD');
+    </script>
+
+    <style>
+        html { scroll-padding-top: 5rem; }
+
+        /* Section heading underline animation */
+        .section-heading {
+            display: inline-block;
+            position: relative;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        .section-heading::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background-color: currentColor;
+            transition: width 0.3s ease;
+        }
+        .section-heading:hover::after {
+            width: 100%;
+        }
+
+        /* Card 3D tilt */
+        .tilt-card {
+            transition: transform 0.1s ease;
+            transform-style: preserve-3d;
+        }
+        .tilt-card:hover {
+            transform: perspective(1000px) rotateX(var(--rotate-x, 0deg)) rotateY(var(--rotate-y, 0deg));
+        }
+
+        /* Glassmorphism */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: border-color 0.3s ease;
+        }
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Horizontal timeline - desktop */
+        @media (min-width: 1140px) {
+            .timeline-items {
+                border-top: 3px solid rgba(255, 255, 255, 0.1);
+                display: flex;
+            }
+            .timeline-item {
+                display: inline-block;
+                width: 25%;
+                position: relative;
+                padding-top: 45px;
+                text-align: center;
+            }
+            .timeline-item::before {
+                content: "";
+                position: absolute;
+                height: 36px;
+                border-right: 2px dashed rgba(255, 255, 255, 0.2);
+                top: 0;
+            }
+            .timeline-date-wrap {
+                position: absolute;
+                top: -40px;
+                left: 0;
+                right: 0;
+                display: flex;
+                justify-content: center;
+            }
+        }
+
+        /* Horizontal timeline - mobile/tablet */
+        @media (max-width: 1139px) {
+            .timeline-items {
+                padding: 0;
+                margin: 0;
+            }
+            .timeline-item {
+                display: block;
+                width: 100%;
+                margin-bottom: 1.5rem;
+            }
+            .timeline-item .timeline-content {
+                background: rgba(255, 255, 255, 0.04);
+                border-radius: 0.75rem;
+                padding: 1.5rem;
+                border-left: 4px solid;
+            }
+            .timeline-item[data-color="info"] .timeline-content { border-left-color: #0dcaf0; }
+            .timeline-item[data-color="success"] .timeline-content { border-left-color: #198754; }
+            .timeline-item[data-color="danger"] .timeline-content { border-left-color: #dc3545; }
+            .timeline-item[data-color="warning"] .timeline-content { border-left-color: #ffc107; }
+            .timeline-date-wrap {
+                position: relative;
+                margin-bottom: 0.75rem;
+                display: inline-block;
+            }
+        }
+
+        /* Modal animation */
+        .modal-backdrop { background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+        .modal-panel { animation: modalIn 0.25s ease-out; }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-100 font-sans overflow-x-hidden">
+
+    <!-- ===== NAVBAR ===== -->
+    <header class="fixed top-0 w-full z-50 bg-gray-950/80 backdrop-blur-md border-b border-white/5">
+        <nav class="max-w-6xl mx-auto px-4 flex items-center justify-between h-16">
+            <!-- Desktop nav links -->
+            <ul class="hidden lg:flex space-x-6 font-mono font-bold text-sm">
+                <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Home</a></li>
+                <li><a href="#portfolio" class="text-gray-400 hover:text-white transition-colors">Portfolio</a></li>
+                <li><a href="#skills" class="text-gray-400 hover:text-white transition-colors">Skills</a></li>
+                <li><a href="#experience" class="text-gray-400 hover:text-white transition-colors">Experience</a></li>
+                <li><a href="#education" class="text-gray-400 hover:text-white transition-colors">Education</a></li>
+            </ul>
+
+            <!-- Social icons (desktop) -->
+            <div class="hidden lg:flex space-x-4 ml-auto">
+                <a href="https://www.linkedin.com/in/cristianlukecruz/" target="_blank" class="text-gray-400 hover:text-white transition-colors">
+                    <i class="fa-brands fa-linkedin fa-lg"></i>
+                </a>
+                <a href="https://github.com/ccristil" target="_blank" class="text-gray-400 hover:text-white transition-colors">
+                    <i class="fa-brands fa-github fa-lg"></i>
+                </a>
+            </div>
+
+            <!-- Hamburger (mobile) -->
+            <button id="menu-toggle" class="lg:hidden text-gray-400 hover:text-white transition-colors">
+                <i class="fa-solid fa-bars fa-lg"></i>
+            </button>
+        </nav>
+
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="hidden lg:hidden bg-gray-950/95 backdrop-blur-md px-6 pb-4 space-y-3 font-mono font-bold text-sm border-b border-white/10">
+            <a href="#" class="block text-gray-400 hover:text-white transition-colors">Home</a>
+            <a href="#portfolio" class="block text-gray-400 hover:text-white transition-colors">Portfolio</a>
+            <a href="#skills" class="block text-gray-400 hover:text-white transition-colors">Skills</a>
+            <a href="#experience" class="block text-gray-400 hover:text-white transition-colors">Experience</a>
+            <a href="#education" class="block text-gray-400 hover:text-white transition-colors">Education</a>
+            <div class="flex space-x-4 pt-2">
+                <a href="https://www.linkedin.com/in/cristianlukecruz/" target="_blank" class="text-gray-400 hover:text-white transition-colors">
+                    <i class="fa-brands fa-linkedin fa-lg"></i>
+                </a>
+                <a href="https://github.com/ccristil" target="_blank" class="text-gray-400 hover:text-white transition-colors">
+                    <i class="fa-brands fa-github fa-lg"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== HERO BANNER ===== -->
+    <section class="relative w-full h-[600px] overflow-hidden flex items-center justify-center">
+        <img src="../assets/mountains_bg.jpg" alt="Mountain background" class="absolute inset-0 w-full h-full object-cover">
+        <div class="absolute inset-0 bg-black/40"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-gray-950 via-transparent to-transparent"></div>
+        <div class="relative z-10 text-center px-4">
+            <h1 class="text-4xl md:text-6xl font-bold text-white tracking-tight">Cristian Cruz</h1>
+            <p class="text-base md:text-xl font-mono text-gray-300 mt-3">data enthusiast @ clearsquare</p>
+        </div>
+    </section>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="max-w-6xl mx-auto px-4">
+
+        <!-- ===== PORTFOLIO ===== -->
+        <section id="portfolio" class="py-20">
+            <h2 class="section-heading text-3xl font-bold mb-10">Portfolio</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                <!-- Card 1: ML Real Estate Pipeline -->
+                <div class="tilt-card glass-card rounded-xl p-6 flex flex-col h-full">
+                    <h3 class="font-mono font-bold text-lg mb-2">ML Real Estate Pipeline</h3>
+                    <p class="text-gray-400 text-sm mb-4 flex-grow">Start to finish machine learning pipeline which evaluated various models to see which one most accurately predicted home prices in Utah.</p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span class="bg-gray-700 text-gray-200 text-xs px-2.5 py-1 rounded-full">Python</span>
+                        <span class="bg-gray-700 text-gray-200 text-xs px-2.5 py-1 rounded-full">Pandas</span>
+                        <span class="bg-gray-700 text-gray-200 text-xs px-2.5 py-1 rounded-full">scikit-learn</span>
+                        <span class="bg-gray-700 text-gray-200 text-xs px-2.5 py-1 rounded-full">matplotlib</span>
+                        <span class="bg-gray-700 text-gray-200 text-xs px-2.5 py-1 rounded-full">PyTorch</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mt-auto">
+                        <button data-modal="portfolioModal1" class="modal-open-btn text-sm font-mono border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white rounded-lg py-1.5 transition-all duration-300 cursor-pointer">View Details</button>
+                        <a href="https://colab.research.google.com/drive/15PrdCOcAKhHmHHRoCnjwcCZYT9zh4Xf1?usp=sharing" target="_blank" class="text-sm font-mono border border-colab text-colab hover:bg-colab hover:text-white rounded-lg py-1.5 text-center transition-all duration-300">
+                            <i class="fa-brands fa-google"></i> Colab
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card 2: Semantic Scripture Search App -->
+                <div class="tilt-card glass-card rounded-xl p-6 flex flex-col h-full">
+                    <h3 class="font-mono font-bold text-lg mb-2">
+                        <a href="https://bom275.streamlit.app/" target="_blank" class="hover:text-purple-400 transition-colors">
+                            Semantic Scripture Search App <i class="fa-solid fa-link text-sm"></i>
+                        </a>
+                    </h3>
+                    <p class="text-gray-400 text-sm mb-4 flex-grow">Chat-like app that allows user to input simple sentences and returns the verses most applicable to their input.</p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span class="bg-gray-700 text-gray-200 text-xs px-2.5 py-1 rounded-full">Python</span>
+                        <span class="bg-gray-700 text-gray-200 text-xs px-2.5 py-1 rounded-full">Pandas</span>
+                        <span class="bg-gray-700 text-gray-200 text-xs px-2.5 py-1 rounded-full">HuggingFace</span>
+                        <span class="bg-gray-700 text-gray-200 text-xs px-2.5 py-1 rounded-full">streamlit</span>
+                        <span class="bg-gray-700 text-gray-200 text-xs px-2.5 py-1 rounded-full">SentenceTransformers</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mt-auto">
+                        <button data-modal="portfolioModal2" class="modal-open-btn text-sm font-mono border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white rounded-lg py-1.5 transition-all duration-300 cursor-pointer">View Details</button>
+                        <a href="https://github.com/ccristil/bom" target="_blank" class="text-sm font-mono border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white rounded-lg py-1.5 text-center transition-all duration-300">
+                            <i class="fa-brands fa-github"></i> GitHub
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card 3: API From Scratch -->
+                <div class="tilt-card glass-card rounded-xl p-6 flex flex-col h-full">
+                    <h3 class="font-mono font-bold text-lg mb-2">API From Scratch</h3>
+                    <p class="text-gray-400 text-sm mb-4 flex-grow">A full scale API built from scratch with dozens of custom endpoints and models. Seamlessly integrated with frontend Razorpages.</p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span class="bg-gray-700 text-gray-200 text-xs px-2.5 py-1 rounded-full">ASP.NET</span>
+                        <span class="bg-gray-700 text-gray-200 text-xs px-2.5 py-1 rounded-full">SQLite</span>
+                        <span class="bg-gray-700 text-gray-200 text-xs px-2.5 py-1 rounded-full">C#</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mt-auto">
+                        <button data-modal="portfolioModal3" class="modal-open-btn text-sm font-mono border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white rounded-lg py-1.5 transition-all duration-300 cursor-pointer">View Details</button>
+                        <a href="#" class="text-sm font-mono border border-purple-500 text-purple-400 rounded-lg py-1.5 text-center opacity-50 pointer-events-none">
+                            <i class="fa-brands fa-github"></i> GitHub
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ===== SKILLS ===== -->
+        <section id="skills" class="py-20">
+            <h2 class="section-heading text-3xl font-bold mb-10">Skills</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                <!-- Languages & Libraries -->
+                <div class="glass-card rounded-xl overflow-hidden">
+                    <div class="px-6 py-3 border-b border-white/10 font-mono font-bold">Languages & Libraries</div>
+                    <div class="p-6 flex flex-wrap gap-2">
+                        <span class="bg-purple-500 text-white text-sm px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-purple-400 hover:shadow-lg hover:shadow-purple-500/25">Python</span>
+                        <span class="bg-purple-500 text-white text-sm px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-purple-400 hover:shadow-lg hover:shadow-purple-500/25">Pandas</span>
+                        <span class="bg-purple-500 text-white text-sm px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-purple-400 hover:shadow-lg hover:shadow-purple-500/25">SQL</span>
+                        <span class="bg-purple-500 text-white text-sm px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-purple-400 hover:shadow-lg hover:shadow-purple-500/25">PyTorch</span>
+                        <span class="bg-purple-500 text-white text-sm px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-purple-400 hover:shadow-lg hover:shadow-purple-500/25">Javascript</span>
+                        <span class="bg-purple-500 text-white text-sm px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-purple-400 hover:shadow-lg hover:shadow-purple-500/25">PHP</span>
+                        <span class="bg-purple-500 text-white text-sm px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-purple-400 hover:shadow-lg hover:shadow-purple-500/25">C#</span>
+                        <span class="bg-purple-500 text-white text-sm px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-purple-400 hover:shadow-lg hover:shadow-purple-500/25">HTML</span>
+                        <span class="bg-purple-500 text-white text-sm px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-purple-400 hover:shadow-lg hover:shadow-purple-500/25">CSS</span>
+                        <span class="bg-purple-500 text-white text-sm px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-purple-400 hover:shadow-lg hover:shadow-purple-500/25">Node.js</span>
+                    </div>
+                </div>
+
+                <!-- Tools -->
+                <div class="glass-card rounded-xl overflow-hidden">
+                    <div class="px-6 py-3 border-b border-white/10 font-mono font-bold">Tools</div>
+                    <div class="p-6 flex flex-wrap gap-2">
+                        <span class="bg-purple-500 text-white text-sm px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-purple-400 hover:shadow-lg hover:shadow-purple-500/25">Fivetran</span>
+                        <span class="bg-purple-500 text-white text-sm px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-purple-400 hover:shadow-lg hover:shadow-purple-500/25">Domo</span>
+                        <span class="bg-purple-500 text-white text-sm px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-purple-400 hover:shadow-lg hover:shadow-purple-500/25">Tableau</span>
+                        <span class="bg-purple-500 text-white text-sm px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-purple-400 hover:shadow-lg hover:shadow-purple-500/25">Metabase</span>
+                        <span class="bg-purple-500 text-white text-sm px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-purple-400 hover:shadow-lg hover:shadow-purple-500/25">Quicksight</span>
+                        <span class="bg-purple-500 text-white text-sm px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-purple-400 hover:shadow-lg hover:shadow-purple-500/25">Excel</span>
+                    </div>
+                </div>
+
+                <!-- Cloud & DevOps -->
+                <div class="glass-card rounded-xl overflow-hidden">
+                    <div class="px-6 py-3 border-b border-white/10 font-mono font-bold">Cloud & DevOps</div>
+                    <div class="p-6 flex flex-wrap gap-2">
+                        <span class="bg-purple-500 text-white text-sm px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-purple-400 hover:shadow-lg hover:shadow-purple-500/25">GitHub</span>
+                        <span class="bg-purple-500 text-white text-sm px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-purple-400 hover:shadow-lg hover:shadow-purple-500/25">Snowflake</span>
+                        <span class="bg-purple-500 text-white text-sm px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-purple-400 hover:shadow-lg hover:shadow-purple-500/25">AWS</span>
+                        <span class="bg-purple-500 text-white text-sm px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-purple-400 hover:shadow-lg hover:shadow-purple-500/25">GCP</span>
+                        <span class="bg-purple-500 text-white text-sm px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-purple-400 hover:shadow-lg hover:shadow-purple-500/25">Docker</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ===== EXPERIENCE ===== -->
+        <section id="experience" class="py-20">
+            <h2 class="section-heading text-3xl font-bold mb-10">Experience</h2>
+            <div class="pt-12">
+                <div class="timeline-items">
+
+                    <div class="timeline-item" data-color="info">
+                        <div class="timeline-date-wrap">
+                            <span class="inline-block bg-info text-black text-xs font-bold px-3 py-1 rounded-full">Aug '23</span>
+                        </div>
+                        <div class="timeline-content">
+                            <h3 class="text-lg font-bold pt-2">Web Developer</h3>
+                            <p class="text-gray-400 text-sm mt-2">Nothing short of an amazing learning experience involving web dev, analytics and backend management.</p>
+                            <button data-modal="job1Modal" class="modal-open-btn mt-3 bg-purple-500 hover:bg-purple-400 text-white text-sm px-4 py-1.5 rounded-lg transition-colors duration-300 cursor-pointer">Read more</button>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item" data-color="success">
+                        <div class="timeline-date-wrap">
+                            <span class="inline-block bg-success text-white text-xs font-bold px-3 py-1 rounded-full">Apr '24</span>
+                        </div>
+                        <div class="timeline-content">
+                            <h3 class="text-lg font-bold pt-2">Web Developer</h3>
+                            <p class="text-gray-400 text-sm mt-2">Leveled up my backend experience 10x and I sharpened teamwork skills on a variety of apps and websites.</p>
+                            <button data-modal="job2Modal" class="modal-open-btn mt-3 bg-purple-500 hover:bg-purple-400 text-white text-sm px-4 py-1.5 rounded-lg transition-colors duration-300 cursor-pointer">Read more</button>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item" data-color="danger">
+                        <div class="timeline-date-wrap">
+                            <span class="inline-block bg-danger text-white text-xs font-bold px-3 py-1 rounded-full">Dec '24</span>
+                        </div>
+                        <div class="timeline-content">
+                            <h3 class="text-lg font-bold pt-2">Research Assistant</h3>
+                            <p class="text-gray-400 text-sm mt-2">Phenomenal chance to apply my data engineering and analytics skills on a tough problem with a team.</p>
+                            <button data-modal="job3Modal" class="modal-open-btn mt-3 bg-purple-500 hover:bg-purple-400 text-white text-sm px-4 py-1.5 rounded-lg transition-colors duration-300 cursor-pointer">Read more</button>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item" data-color="warning">
+                        <div class="timeline-date-wrap">
+                            <span class="inline-block bg-warning text-black text-xs font-bold px-3 py-1 rounded-full">Apr '25</span>
+                        </div>
+                        <div class="timeline-content">
+                            <h3 class="text-lg font-bold pt-2">Technical Consultant</h3>
+                            <p class="text-gray-400 text-sm mt-2">Applying all I've learned about data engineering, analytics, and reporting across dozens of use cases.</p>
+                            <button data-modal="job4Modal" class="modal-open-btn mt-3 bg-purple-500 hover:bg-purple-400 text-white text-sm px-4 py-1.5 rounded-lg transition-colors duration-300 cursor-pointer">Read more</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== EDUCATION ===== -->
+        <section id="education" class="py-20">
+            <h2 class="section-heading text-3xl font-bold mb-10">Education</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 text-center">
+                <div class="md:border-r border-white/10 pb-8 mb-8 border-b md:border-b-0 md:pb-0 md:mb-0 md:pr-6">
+                    <h4 class="text-xl font-bold mb-2">GPA</h4>
+                    <p class="text-4xl font-bold text-green-500">3.7</p>
+                    <p class="text-gray-400 text-sm">Cumulative</p>
+                </div>
+                <div class="md:border-r border-white/10 pb-8 mb-8 border-b md:border-b-0 md:pb-0 md:mb-0 md:px-6">
+                    <h4 class="text-xl font-bold mb-2">Coursework</h4>
+                    <ul class="text-gray-300 text-sm space-y-1">
+                        <li>Exploratory Data Analysis (IS 415)</li>
+                        <li>Database Systems (IS 402)</li>
+                        <li>Machine Learning (IS 455)</li>
+                        <li>Data Structures & Algorithms (IS 437)</li>
+                    </ul>
+                </div>
+                <div class="md:pl-6">
+                    <h4 class="text-xl font-bold mb-2">Extracurriculars</h4>
+                    <ul class="text-gray-300 text-sm space-y-1">
+                        <li>IS Department Research Assistant</li>
+                        <li>MSS Scholarship Recipient (Full Ride)</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="max-w-6xl mx-auto px-4 py-6 border-t border-white/10 flex flex-col md:flex-row justify-between items-center">
+        <p class="text-gray-500 text-sm mb-4 md:mb-0">&copy; Cristian Cruz</p>
+        <ul class="flex flex-wrap justify-center gap-4 font-mono text-sm">
+            <li><a href="#" class="text-gray-500 hover:text-white transition-colors">Home</a></li>
+            <li><a href="#portfolio" class="text-gray-500 hover:text-white transition-colors">Portfolio</a></li>
+            <li><a href="#skills" class="text-gray-500 hover:text-white transition-colors">Skills</a></li>
+            <li><a href="#experience" class="text-gray-500 hover:text-white transition-colors">Experience</a></li>
+            <li><a href="#education" class="text-gray-500 hover:text-white transition-colors">Education</a></li>
+        </ul>
+    </footer>
+
+    <!-- ===== MODALS ===== -->
+
+    <!-- Portfolio Modal 1: ML Real Estate Pipeline -->
+    <div id="portfolioModal1" class="modal-backdrop fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="modal-panel glass-card rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-white/10">
+                <h3 class="font-mono font-bold text-lg">ML Real Estate Pipeline</h3>
+                <button class="modal-close-btn text-gray-400 hover:text-white text-2xl cursor-pointer">&times;</button>
+            </div>
+            <div class="px-6 py-4 text-gray-300 text-sm space-y-3">
+                <p><strong class="text-white">Date:</strong> Apr 2025</p>
+                <p><strong class="text-white">Summary:</strong></p>
+                <ul class="list-disc list-inside space-y-1 text-gray-400">
+                    <li>Connected to Zillow's API and gathered the raw Utah homes data</li>
+                    <li>Explored the data and performed analysis of what columns to include and how to transform them if necessary</li>
+                    <li>Added depth to the dataset by engineering a feature that tracked how close each home was to significant geographic locations.</li>
+                    <li>Tested various popular machine learning models and tuned hyperparameters to get the best results for each one. The best model was XGBoost.</li>
+                    <li>Visualized results and wrote a paper on my findings.</li>
+                </ul>
+                <p><strong class="text-white">Technologies:</strong></p>
+                <div class="flex flex-wrap gap-2">
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">Python</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">Pandas</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">scikit-learn</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">matplotlib</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">PyTorch</span>
+                </div>
+            </div>
+            <div class="flex justify-end px-6 py-4 border-t border-white/10">
+                <button class="modal-close-btn bg-gray-700 hover:bg-gray-600 text-white text-sm px-4 py-2 rounded-lg transition-colors cursor-pointer">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Portfolio Modal 2: Semantic Scripture Search App -->
+    <div id="portfolioModal2" class="modal-backdrop fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="modal-panel glass-card rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-white/10">
+                <h3 class="font-mono font-bold text-lg">Semantic Scripture Search App</h3>
+                <button class="modal-close-btn text-gray-400 hover:text-white text-2xl cursor-pointer">&times;</button>
+            </div>
+            <div class="px-6 py-4 text-gray-300 text-sm space-y-3">
+                <p><strong class="text-white">Date:</strong> May 2025</p>
+                <p><strong class="text-white">Summary:</strong></p>
+                <ul class="list-disc list-inside space-y-1 text-gray-400">
+                    <li>Cleaned and prepared datasets of verses for model training.</li>
+                    <li>Trained SentenceTransformer models on the cleaned datasets.</li>
+                    <li>Hosted the model and data in HuggingFace.</li>
+                    <li>Built a streamlit app around the models and deployed it for usage.</li>
+                </ul>
+                <p><strong class="text-white">Technologies:</strong></p>
+                <div class="flex flex-wrap gap-2">
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">Python</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">Pandas</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">HuggingFace</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">streamlit</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">SentenceTransformers</span>
+                </div>
+            </div>
+            <div class="flex justify-end px-6 py-4 border-t border-white/10">
+                <button class="modal-close-btn bg-gray-700 hover:bg-gray-600 text-white text-sm px-4 py-2 rounded-lg transition-colors cursor-pointer">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Portfolio Modal 3: API From Scratch -->
+    <div id="portfolioModal3" class="modal-backdrop fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="modal-panel glass-card rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-white/10">
+                <h3 class="font-mono font-bold text-lg">API From Scratch</h3>
+                <button class="modal-close-btn text-gray-400 hover:text-white text-2xl cursor-pointer">&times;</button>
+            </div>
+            <div class="px-6 py-4 text-gray-300 text-sm space-y-3">
+                <p><strong class="text-white">Dates:</strong> Jan 2025 - May 2025</p>
+                <p><strong class="text-white">Summary:</strong></p>
+                <ul class="list-disc list-inside space-y-1 text-gray-400">
+                    <li>Evaluated needs and scope of the project to create a robust ERD.</li>
+                    <li>Defined core API calls including method signatures to be used by the frontend team.</li>
+                    <li>Built all the API calls from the ground up.</li>
+                    <li>Successfully implemented a sync behavior with an external database.</li>
+                </ul>
+                <p><strong class="text-white">Technologies:</strong></p>
+                <div class="flex flex-wrap gap-2">
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">ASP.NET</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">SQLite</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">C#</span>
+                </div>
+            </div>
+            <div class="flex justify-end px-6 py-4 border-t border-white/10">
+                <button class="modal-close-btn bg-gray-700 hover:bg-gray-600 text-white text-sm px-4 py-2 rounded-lg transition-colors cursor-pointer">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Job Modal 1: Web Developer - BYU Chinese & Arabic Flagships -->
+    <div id="job1Modal" class="modal-backdrop fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="modal-panel glass-card rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-white/10">
+                <h3 class="font-bold text-lg">Web Developer - BYU Chinese & Arabic Flagships</h3>
+                <button class="modal-close-btn text-gray-400 hover:text-white text-2xl cursor-pointer">&times;</button>
+            </div>
+            <div class="px-6 py-4 text-gray-300 text-sm space-y-3">
+                <p><strong class="text-white">Duration:</strong> Aug 2023 - Apr 2024</p>
+                <p><strong class="text-white">Responsibilities:</strong></p>
+                <ul class="list-disc list-inside space-y-1 text-gray-400">
+                    <li>Conducted monthly website performance analyses using Google Analytics and presenting findings in concise reports.</li>
+                    <li>Maintained 5 web pages using PHP and SQL (phpMyAdmin), fixing bugs and improving usability through weekly collaboration.</li>
+                    <li>Learned PHP for full stack web dev. (to be honest PHP isn't bad!)</li>
+                    <li>Frequently executed custom SQL queries to retrieve data requested by superiors.</li>
+                </ul>
+                <p><strong class="text-white">Technologies:</strong></p>
+                <div class="flex flex-wrap gap-2">
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">PHP</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">SQL</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">Google Analytics</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">HTML</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">CSS</span>
+                </div>
+            </div>
+            <div class="flex justify-end px-6 py-4 border-t border-white/10">
+                <button class="modal-close-btn bg-gray-700 hover:bg-gray-600 text-white text-sm px-4 py-2 rounded-lg transition-colors cursor-pointer">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Job Modal 2: Web Developer - BYU Police & Security -->
+    <div id="job2Modal" class="modal-backdrop fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="modal-panel glass-card rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-white/10">
+                <h3 class="font-bold text-lg">Web Developer - BYU Police & Security</h3>
+                <button class="modal-close-btn text-gray-400 hover:text-white text-2xl cursor-pointer">&times;</button>
+            </div>
+            <div class="px-6 py-4 text-gray-300 text-sm space-y-3">
+                <p><strong class="text-white">Duration:</strong> Apr 2024 - Apr 2025</p>
+                <p><strong class="text-white">Responsibilities:</strong></p>
+                <ul class="list-disc list-inside space-y-1 text-gray-400">
+                    <li>Designed and implemented a full-scale API from scratch using ASP.NET, integrating dozens of models and custom API endpoints to enhance system functionality.</li>
+                    <li>Developed extensive unit tests with Jest for various JavaScript methods, including complex SQL statements, ensuring code quality and reliability.</li>
+                    <li>Built 12+ Mendix apps on-time with essential features</li>
+                    <li>Utilized Postman to test and validate data transfer, ensuring correct API response and functionality.</li>
+                </ul>
+                <p><strong class="text-white">Technologies:</strong></p>
+                <div class="flex flex-wrap gap-2">
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">C# (ASP.NET)</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">HTML</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">CSS</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">Javascript</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">Mendix</span>
+                </div>
+            </div>
+            <div class="flex justify-end px-6 py-4 border-t border-white/10">
+                <button class="modal-close-btn bg-gray-700 hover:bg-gray-600 text-white text-sm px-4 py-2 rounded-lg transition-colors cursor-pointer">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Job Modal 3: Research Assistant - BYU IS Department -->
+    <div id="job3Modal" class="modal-backdrop fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="modal-panel glass-card rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-white/10">
+                <h3 class="font-bold text-lg">Research Assistant - BYU IS Department</h3>
+                <button class="modal-close-btn text-gray-400 hover:text-white text-2xl cursor-pointer">&times;</button>
+            </div>
+            <div class="px-6 py-4 text-gray-300 text-sm space-y-3">
+                <p><strong class="text-white">Duration:</strong> Dec 2024 - May 2025</p>
+                <p><strong class="text-white">Responsibilities:</strong></p>
+                <ul class="list-disc list-inside space-y-1 text-gray-400">
+                    <li>Analyzed complex datasets using Python and pandas to identify trends.</li>
+                    <li>Built lightweight ETL pipelines with Python and Serpapi to extract, normalize, and load multiformat data into Excel.</li>
+                    <li>Leveraged ChatGPT to extract actionable insights from extensive text data, improving data interpretability.</li>
+                </ul>
+                <p><strong class="text-white">Technologies:</strong></p>
+                <div class="flex flex-wrap gap-2">
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">Python</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">Pandas</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">scikit-learn</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">Postman</span>
+                </div>
+            </div>
+            <div class="flex justify-end px-6 py-4 border-t border-white/10">
+                <button class="modal-close-btn bg-gray-700 hover:bg-gray-600 text-white text-sm px-4 py-2 rounded-lg transition-colors cursor-pointer">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Job Modal 4: Technical Consultant - ClearSquare -->
+    <div id="job4Modal" class="modal-backdrop fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="modal-panel glass-card rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-white/10">
+                <h3 class="font-bold text-lg">Technical Consultant - ClearSquare</h3>
+                <button class="modal-close-btn text-gray-400 hover:text-white text-2xl cursor-pointer">&times;</button>
+            </div>
+            <div class="px-6 py-4 text-gray-300 text-sm space-y-3">
+                <p><strong class="text-white">Duration:</strong> Apr 2025 - Present</p>
+                <p><strong class="text-white">Responsibilities:</strong></p>
+                <ul class="list-disc list-inside space-y-1 text-gray-400">
+                    <li>Regularly meet with clients to understand needs, lead working sessions, and gather feedback.</li>
+                    <li>Build end-to-end ETL/ELT pipelines to suit stakeholder needs.</li>
+                    <li>Design and hone beautiful dashboards and visualizations with data pipeline outputs.</li>
+                    <li>Create custom HTML/CSS email templates.</li>
+                    <li>Build courses on various product offerings and technical tools to suite client needs.</li>
+                </ul>
+                <p><strong class="text-white">Technologies:</strong></p>
+                <div class="flex flex-wrap gap-2">
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">Python</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">Pandas</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">SQL</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">AWS</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">GCP</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">Snowflake</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">Metabase</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">Domo</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">QuickSight</span>
+                </div>
+            </div>
+            <div class="flex justify-end px-6 py-4 border-t border-white/10">
+                <button class="modal-close-btn bg-gray-700 hover:bg-gray-600 text-white text-sm px-4 py-2 rounded-lg transition-colors cursor-pointer">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== JAVASCRIPT ===== -->
+    <script>
+        // 1. Mobile menu toggle
+        document.getElementById('menu-toggle').addEventListener('click', () => {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        });
+
+        // Close mobile menu when a link is clicked
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('mobile-menu').classList.add('hidden');
+            });
+        });
+
+        // 2. Card 3D tilt effect
+        document.querySelectorAll('.tilt-card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = (y - centerY) / 40;
+                const rotateY = (centerX - x) / 40;
+                card.style.setProperty('--rotate-x', `${-rotateX}deg`);
+                card.style.setProperty('--rotate-y', `${rotateY}deg`);
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.setProperty('--rotate-x', '0deg');
+                card.style.setProperty('--rotate-y', '0deg');
+            });
+        });
+
+        // 3. Modal controller
+        // Open
+        document.querySelectorAll('.modal-open-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const modalId = btn.dataset.modal;
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                }
+            });
+        });
+
+        // Close via close buttons
+        document.querySelectorAll('.modal-close-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const modal = btn.closest('.modal-backdrop');
+                if (modal) {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+
+        // Close on backdrop click
+        document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+            backdrop.addEventListener('click', (e) => {
+                if (e.target === backdrop) {
+                    backdrop.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-backdrop:not(.hidden)').forEach(modal => {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                });
+            }
+        });
+    </script>
+
+</body>
+</html>
