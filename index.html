@@ -197,11 +197,11 @@
                 <a href="https://github.com/ccristil" target="_blank" class="text-gray-400 hover:text-white transition-colors">
                     <i class="fa-brands fa-github fa-lg"></i>
                 </a>
-                <a href="assets/resume.pdf" download="Cristian_Cruz_Resume.pdf"
-                   class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-white/20 hover:border-white/40 text-gray-400 hover:text-white font-mono text-xs rounded-md transition-all duration-200">
+                <button onclick="openResumeModal()"
+                   class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-white/20 hover:border-white/40 text-gray-400 hover:text-white font-mono text-xs rounded-md transition-all duration-200 cursor-pointer">
                     <i class="fa-solid fa-file-arrow-down"></i>
                     Resume
-                </a>
+                </button>
             </div>
 
             <!-- Hamburger (mobile) -->
@@ -210,11 +210,11 @@
             </button>
 
             <!-- Resume button (mobile only) -->
-            <a href="assets/resume.pdf" download="Cristian_Cruz_Resume.pdf"
-               class="flex lg:hidden items-center gap-1.5 px-3 py-1.5 border border-white/20 hover:border-white/40 text-gray-400 hover:text-white font-mono text-xs rounded-md transition-all duration-200">
+            <button onclick="openResumeModal()"
+               class="flex lg:hidden items-center gap-1.5 px-3 py-1.5 border border-white/20 hover:border-white/40 text-gray-400 hover:text-white font-mono text-xs rounded-md transition-all duration-200 cursor-pointer">
                 <i class="fa-solid fa-file-arrow-down"></i>
                 Resume
-            </a>
+            </button>
         </nav>
 
         <!-- Mobile menu -->
@@ -244,11 +244,11 @@
             <h1 class="text-4xl md:text-6xl font-bold text-white tracking-tight">Cristian Cruz</h1>
             <p class="text-base md:text-xl font-mono text-gray-300 mt-3">data enthusiast @ clearsquare</p>
             <div class="mt-6">
-                <a href="assets/resume.pdf" download="Cristian_Cruz_Resume.pdf"
-                   class="inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-mono text-sm rounded-lg backdrop-blur-sm transition-all duration-200">
+                <button onclick="openResumeModal()"
+                   class="inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-mono text-sm rounded-lg backdrop-blur-sm transition-all duration-200 cursor-pointer">
                     <i class="fa-solid fa-file-arrow-down"></i>
                     Resume
-                </a>
+                </button>
             </div>
         </div>
     </section>
@@ -742,6 +742,9 @@
         </div>
     </div>
 
+    <!-- PDF.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
     <!-- ===== JAVASCRIPT ===== -->
     <script>
         // 1. Mobile menu toggle
@@ -819,7 +822,79 @@
                 });
             }
         });
+
+        // ===== RESUME PDF PREVIEW =====
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        let pdfDoc = null, currentPage = 1;
+
+        function renderPage(num) {
+            pdfDoc.getPage(num).then(page => {
+                const canvas = document.getElementById('resume-canvas');
+                const ctx = canvas.getContext('2d');
+                const containerWidth = canvas.parentElement.clientWidth - 32;
+                const viewport = page.getViewport({ scale: 1 });
+                const scale = Math.min(containerWidth / viewport.width, 1.5);
+                const scaledViewport = page.getViewport({ scale });
+                canvas.width = scaledViewport.width;
+                canvas.height = scaledViewport.height;
+                page.render({ canvasContext: ctx, viewport: scaledViewport });
+                document.getElementById('resume-page-info').textContent = `Page ${num} of ${pdfDoc.numPages}`;
+                document.getElementById('resume-prev').disabled = num <= 1;
+                document.getElementById('resume-next').disabled = num >= pdfDoc.numPages;
+            });
+        }
+
+        function openResumeModal() {
+            document.getElementById('resumeModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            if (!pdfDoc) {
+                pdfjsLib.getDocument('assets/resume.pdf').promise.then(doc => {
+                    pdfDoc = doc;
+                    currentPage = 1;
+                    renderPage(currentPage);
+                });
+            } else {
+                renderPage(currentPage);
+            }
+        }
+
+        document.getElementById('resume-prev').addEventListener('click', () => {
+            if (currentPage > 1) { currentPage--; renderPage(currentPage); }
+        });
+
+        document.getElementById('resume-next').addEventListener('click', () => {
+            if (pdfDoc && currentPage < pdfDoc.numPages) { currentPage++; renderPage(currentPage); }
+        });
     </script>
+
+    <!-- ===== RESUME PREVIEW MODAL ===== -->
+    <div id="resumeModal" class="modal-backdrop fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-card rounded-2xl w-full max-w-2xl flex flex-col" style="max-height: 90vh;">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-white/10 flex-shrink-0">
+                <h3 class="font-mono font-bold text-lg">Resume</h3>
+                <button class="modal-close-btn text-gray-400 hover:text-white text-2xl cursor-pointer">&times;</button>
+            </div>
+            <div class="overflow-auto flex-1 flex items-center justify-center p-4 bg-gray-900/50">
+                <canvas id="resume-canvas" class="max-w-full rounded shadow-lg"></canvas>
+            </div>
+            <div class="flex items-center justify-between px-6 py-4 border-t border-white/10 flex-shrink-0">
+                <div class="flex items-center gap-3">
+                    <button id="resume-prev" class="px-3 py-1.5 border border-white/20 hover:border-white/40 text-gray-400 hover:text-white font-mono text-xs rounded-md transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-chevron-left"></i> Prev
+                    </button>
+                    <span id="resume-page-info" class="font-mono text-xs text-gray-400">Page 1 of 1</span>
+                    <button id="resume-next" class="px-3 py-1.5 border border-white/20 hover:border-white/40 text-gray-400 hover:text-white font-mono text-xs rounded-md transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed">
+                        Next <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+                <a href="assets/resume.pdf" download="Cristian_Cruz_Resume.pdf"
+                   class="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-mono text-xs rounded-md transition-all duration-200">
+                    <i class="fa-solid fa-file-arrow-down"></i> Download
+                </a>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>
