@@ -485,7 +485,7 @@
                 <!-- Current Favorite Song -->
                 <div class="glass-card rounded-xl overflow-hidden">
                     <div class="px-6 py-3 border-b border-white/10 font-mono font-bold flex items-center gap-2">
-                        <i class="fa-solid fa-music text-purple-400"></i>
+                        <i class="fa-brands fa-apple" style="color: #D5003B;"></i>
                         Current Favorite Song
                     </div>
                     <div class="p-6">
@@ -504,16 +504,6 @@
                     </div>
                 </div>
 
-                <!-- GitHub Contributions Chart -->
-                <div class="glass-card rounded-xl overflow-hidden md:col-span-2">
-                    <div class="px-6 py-3 border-b border-white/10 font-mono font-bold flex items-center gap-2">
-                        <i class="fa-brands fa-github text-white"></i>
-                        GitHub Contributions
-                    </div>
-                    <div class="p-6 flex justify-center">
-                        <canvas id="github-contributions-canvas" class="w-full rounded-lg"></canvas>
-                    </div>
-                </div>
             </div>
         </section>
 
@@ -950,22 +940,6 @@
         });
     </script>
 
-    <!-- GitHub Contributions Chart -->
-    <script type="module">
-        import { drawContributions } from 'https://cdn.jsdelivr.net/npm/github-contributions-canvas@latest/lib/index.js';
-
-        fetch('https://github-contributions.vercel.app/api/v1/ccristil')
-            .then(r => r.json())
-            .then(data => {
-                const canvas = document.getElementById('github-contributions-canvas');
-                drawContributions(canvas, {
-                    data,
-                    username: 'ccristil',
-                    themeName: 'dracula',
-                    footerText: ''
-                });
-            });
-    </script>
 
 
 </body>
