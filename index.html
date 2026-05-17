@@ -301,6 +301,26 @@
                     </div>
                 </div>
 
+                <!-- Card 4: Risa Running -->
+                <div class="tilt-card glass-card rounded-xl p-6 flex flex-col h-full">
+                    <h3 class="font-mono font-bold text-lg mb-2">Risa Running</h3>
+                    <p class="text-gray-400 text-sm mb-4 flex-grow">I built an iOS app for myself so I can have live coaching as I go on runs.</p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span class="bg-gray-700 text-gray-200 text-xs px-2.5 py-1 rounded-full">Python</span>
+                        <span class="bg-gray-700 text-gray-200 text-xs px-2.5 py-1 rounded-full">Flask</span>
+                        <span class="bg-gray-700 text-gray-200 text-xs px-2.5 py-1 rounded-full">Grok</span>
+                        <span class="bg-gray-700 text-gray-200 text-xs px-2.5 py-1 rounded-full">Elevenlabs</span>
+                        <span class="bg-gray-700 text-gray-200 text-xs px-2.5 py-1 rounded-full">GCP</span>
+                        <span class="bg-gray-700 text-gray-200 text-xs px-2.5 py-1 rounded-full">Postgres</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mt-auto">
+                        <button data-modal="portfolioModal4" class="modal-open-btn text-sm font-mono border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white rounded-lg py-1.5 transition-all duration-300 cursor-pointer">View Details</button>
+                        <a href="#" class="text-sm font-mono border border-purple-500 text-purple-400 rounded-lg py-1.5 text-center opacity-50 pointer-events-none">
+                            <i class="fa-brands fa-github"></i> GitHub
+                        </a>
+                    </div>
+                </div>
+
             </div>
         </section>
 
@@ -536,6 +556,38 @@
                     <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">ASP.NET</span>
                     <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">SQLite</span>
                     <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">C#</span>
+                </div>
+            </div>
+            <div class="flex justify-end px-6 py-4 border-t border-white/10">
+                <button class="modal-close-btn bg-gray-700 hover:bg-gray-600 text-white text-sm px-4 py-2 rounded-lg transition-colors cursor-pointer">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Portfolio Modal 4: Risa Running -->
+    <div id="portfolioModal4" class="modal-backdrop fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="modal-panel glass-card rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-white/10">
+                <h3 class="font-mono font-bold text-lg">Risa Running</h3>
+                <button class="modal-close-btn text-gray-400 hover:text-white text-2xl cursor-pointer">&times;</button>
+            </div>
+            <div class="px-6 py-4 text-gray-300 text-sm space-y-3">
+                <p><strong class="text-white">Date:</strong> Apr 2026 - Present</p>
+                <p><strong class="text-white">Summary:</strong></p>
+                <ul class="list-disc list-inside space-y-1 text-gray-400">
+                    <li>The backend lives in a GCP Cloud Run instance which spins up when the app is accessed.</li>
+                    <li>I designed the database schema and then built it out in Postgres using <a href="https://neon.com/" target="_blank" class="text-purple-400 hover:text-purple-300 underline underline-offset-2 transition-colors">NeonDB</a>.</li>
+                    <li>The frontend is entirely Swift and I used Claude Code to build it out, hone the UI, and ensure my app correctly calls my APIs.</li>
+                    <li>Overall I've loved this project, it's been so much fun combining some cutting-edge AI tools with my API and database knowledge to create something that I use every day!</li>
+                </ul>
+                <p><strong class="text-white">Technologies:</strong></p>
+                <div class="flex flex-wrap gap-2">
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">Python</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">Flask</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">Grok</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">Elevenlabs</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">GCP</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">Postgres</span>
                 </div>
             </div>
             <div class="flex justify-end px-6 py-4 border-t border-white/10">

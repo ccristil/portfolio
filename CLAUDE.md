@@ -47,20 +47,21 @@ This is a personal portfolio website. Claude should make targeted, minimal chang
 4. **Explain impact** - Clarify what breaks, what improves, what risks exist
 
 ## File Structure Context
-[Add your actual structure here, e.g.:
-- `/src` - React/Vue components (if applicable)
-- `/public` - Static assets
+- `/assets` - Static assets (images, `site.css`)
 - `/blog` - Blog feature (beta, hidden)
-- `/styles` - CSS or styling
-  ]
+- `/dev` - Development/staging versions of pages
+- `index.html` - Main production portfolio page
+- `blog.html` - Blog page (beta, hidden)
+- `modals.html` - Modal components
 
 ## Technology Stack
-[Add your stack, e.g.:
-- Framework: Next.js / React / HTML+CSS
-- Styling: Tailwind / CSS modules / etc.
-- Hosting: Vercel / GitHub Pages / etc.
-- Blog tech: Markdown / Headless CMS / etc.
-  ]
+- **Framework**: Vanilla HTML + CSS + JavaScript (no build step)
+- **Styling**: Tailwind CSS (via CDN), inline `<style>` blocks
+- **UI Icons**: Font Awesome (via CDN kit)
+- **Fonts**: Google Fonts — Inter
+- **Analytics**: PostHog, Google Analytics (gtag.js)
+- **Hosting**: GitHub Pages
+- **Blog tech**: In development (files in `/blog`, not yet live)
 
 ---
 
