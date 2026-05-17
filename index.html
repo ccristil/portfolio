@@ -187,6 +187,7 @@
                 <li><a href="#skills" class="text-gray-400 hover:text-white transition-colors">Skills</a></li>
                 <li><a href="#experience" class="text-gray-400 hover:text-white transition-colors">Experience</a></li>
                 <li><a href="#education" class="text-gray-400 hover:text-white transition-colors">Education</a></li>
+                <li><a href="#get-to-know-me" class="text-gray-400 hover:text-white transition-colors">Get to Know Me</a></li>
             </ul>
 
             <!-- Social icons (desktop) -->
@@ -224,6 +225,7 @@
             <a href="#skills" class="block text-gray-400 hover:text-white transition-colors">Skills</a>
             <a href="#experience" class="block text-gray-400 hover:text-white transition-colors">Experience</a>
             <a href="#education" class="block text-gray-400 hover:text-white transition-colors">Education</a>
+            <a href="#get-to-know-me" class="block text-gray-400 hover:text-white transition-colors">Get to Know Me</a>
             <div class="flex space-x-4 pt-2">
                 <a href="https://www.linkedin.com/in/cristianlukecruz/" target="_blank" class="text-gray-400 hover:text-white transition-colors">
                     <i class="fa-brands fa-linkedin fa-lg"></i>
@@ -242,7 +244,7 @@
         <div class="absolute inset-0 bg-gradient-to-t from-gray-950 via-transparent to-transparent"></div>
         <div class="relative z-10 text-center px-4">
             <h1 class="text-4xl md:text-6xl font-bold text-white tracking-tight">Cristian Cruz</h1>
-            <p class="text-base md:text-xl font-mono text-gray-300 mt-3">data enthusiast @ clearsquare</p>
+            <p class="text-base md:text-xl font-mono text-gray-300 mt-3">data enthusiast</p>
             <div class="mt-6">
                 <button onclick="openResumeModal()"
                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-mono text-sm rounded-lg backdrop-blur-sm transition-all duration-200 cursor-pointer">
@@ -475,6 +477,46 @@
             </div>
         </section>
 
+        <!-- ===== GET TO KNOW ME ===== -->
+        <section id="get-to-know-me" class="py-20">
+            <h2 class="section-heading text-3xl font-bold mb-4">Get to Know Me</h2>
+            <p class="text-gray-400 text-base mb-10">Outside of work, I'm someone who loves running, fishing, and spending time with my wife and kiddos. Below are a few more details about me, feel free to connect on Strava if you love to run as well!</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Current Favorite Song -->
+                <div class="glass-card rounded-xl overflow-hidden">
+                    <div class="px-6 py-3 border-b border-white/10 font-mono font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-music text-purple-400"></i>
+                        Current Favorite Song
+                    </div>
+                    <div class="p-6">
+                        <iframe height="175" width="100%" title="Media player" src="https://embed.music.apple.com/us/album/superheroes/697194953?i=697195890&amp;itscg=30200&amp;itsct=music_box_player&amp;ls=1&amp;app=music&amp;mttnsubad=697195890&amp;theme=auto" id="embedPlayer" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation" allow="autoplay *; encrypted-media *; clipboard-write" style="border: 0; border-radius: 12px; width: 100%; height: 175px; max-width: 660px;"></iframe>
+                    </div>
+                </div>
+
+                <!-- Strava Weekly Stats -->
+                <div class="glass-card rounded-xl overflow-hidden">
+                    <div class="px-6 py-3 border-b border-white/10 font-mono font-bold flex items-center gap-2">
+                        <i class="fa-brands fa-strava text-orange-400"></i>
+                        This Week on Strava
+                    </div>
+                    <div class="p-6 flex justify-center">
+                        <iframe height='160' width='300' frameborder='0' allowtransparency='true' scrolling='no' src='https://www.strava.com/athletes/143526974/activity-summary/1fcd3b2e75c07415715826cac8901821caf7bf51'></iframe>
+                    </div>
+                </div>
+
+                <!-- GitHub Contributions Chart -->
+                <div class="glass-card rounded-xl overflow-hidden md:col-span-2">
+                    <div class="px-6 py-3 border-b border-white/10 font-mono font-bold flex items-center gap-2">
+                        <i class="fa-brands fa-github text-white"></i>
+                        GitHub Contributions
+                    </div>
+                    <div class="p-6 flex justify-center">
+                        <canvas id="github-contributions-canvas" class="w-full rounded-lg"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </main>
 
     <!-- ===== FOOTER ===== -->
@@ -486,6 +528,7 @@
             <li><a href="#skills" class="text-gray-500 hover:text-white transition-colors">Skills</a></li>
             <li><a href="#experience" class="text-gray-500 hover:text-white transition-colors">Experience</a></li>
             <li><a href="#education" class="text-gray-500 hover:text-white transition-colors">Education</a></li>
+            <li><a href="#get-to-know-me" class="text-gray-500 hover:text-white transition-colors">Get to Know Me</a></li>
         </ul>
     </footer>
 
@@ -905,6 +948,23 @@
         document.getElementById('resumeModal').addEventListener('click', (e) => {
             if (e.target === document.getElementById('resumeModal')) closeResumeModal();
         });
+    </script>
+
+    <!-- GitHub Contributions Chart -->
+    <script type="module">
+        import { drawContributions } from 'https://cdn.jsdelivr.net/npm/github-contributions-canvas@latest/lib/index.js';
+
+        fetch('https://github-contributions.vercel.app/api/v1/ccristil')
+            .then(r => r.json())
+            .then(data => {
+                const canvas = document.getElementById('github-contributions-canvas');
+                drawContributions(canvas, {
+                    data,
+                    username: 'ccristil',
+                    themeName: 'dracula',
+                    footerText: ''
+                });
+            });
     </script>
 
 
