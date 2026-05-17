@@ -848,7 +848,6 @@
                 const modal = document.getElementById(modalId);
                 if (modal) {
                     modal.classList.remove('hidden');
-                    document.body.style.overflow = 'hidden';
                 }
             });
         });
@@ -859,7 +858,6 @@
                 const modal = btn.closest('.modal-backdrop');
                 if (modal) {
                     modal.classList.add('hidden');
-                    document.body.style.overflow = '';
                 }
             });
         });
@@ -869,7 +867,6 @@
             backdrop.addEventListener('click', (e) => {
                 if (e.target === backdrop) {
                     backdrop.classList.add('hidden');
-                    document.body.style.overflow = '';
                 }
             });
         });
@@ -879,7 +876,6 @@
             if (e.key === 'Escape') {
                 document.querySelectorAll('.modal-backdrop:not(.hidden)').forEach(modal => {
                     modal.classList.add('hidden');
-                    document.body.style.overflow = '';
                 });
             }
         });
@@ -908,7 +904,6 @@
 
         function openResumeModal() {
             document.getElementById('resumeModal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
             if (!pdfDoc) {
                 pdfjsLib.getDocument('assets/resume.pdf').promise.then(doc => {
                     pdfDoc = doc;
@@ -930,7 +925,6 @@
 
         function closeResumeModal() {
             document.getElementById('resumeModal').classList.add('hidden');
-            document.body.style.overflow = '';
         }
 
         document.getElementById('resumeModal').querySelector('.modal-close-btn').addEventListener('click', closeResumeModal);

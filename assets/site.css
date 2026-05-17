@@ -1,3 +1,7 @@
+html {
+    scrollbar-gutter: stable;
+}
+
 nav {
     font-family: 'Courier New', monospace;
     font-weight: bold;
