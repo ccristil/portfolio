@@ -3,6 +3,10 @@ nav {
     font-weight: bold;
 }
 
+.skill-card {
+    height: 100%;
+}
+
 .monospace {
     font-family: 'Courier New', monospace;
 }
@@ -143,6 +147,8 @@ section h2:hover::after {
     transition: transform 0.1s ease;
     transform-style: preserve-3d;
 }
+
+
 
 .card:hover {
     transform: perspective(1000px) rotateX(var(--rotate-x, 0deg)) rotateY(var(--rotate-y, 0deg));
