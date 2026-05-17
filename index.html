@@ -866,6 +866,18 @@
         document.getElementById('resume-next').addEventListener('click', () => {
             if (pdfDoc && currentPage < pdfDoc.numPages) { currentPage++; renderPage(currentPage); }
         });
+
+        function closeResumeModal() {
+            document.getElementById('resumeModal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('resumeModal').querySelector('.modal-close-btn').addEventListener('click', closeResumeModal);
+            document.getElementById('resumeModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('resumeModal')) closeResumeModal();
+            });
+        });
     </script>
 
     <!-- ===== RESUME PREVIEW MODAL ===== -->
