@@ -342,6 +342,26 @@
                     </div>
                 </div>
 
+                <!-- Card 5: mb-skills -->
+                <div class="tilt-card glass-card rounded-xl p-6 flex flex-col h-full">
+                    <h3 class="font-mono font-bold text-lg mb-2">
+                            Metabase Skills
+                    </h3>
+                    <p class="text-gray-400 text-sm mb-4 flex-grow">A concise series of Claude Code skills for interacting with your Metabase instance using natural language. Covers queries, dashboards, saved questions, tables, and more — 9 skills total.</p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span class="bg-gray-700 text-gray-200 text-xs px-2.5 py-1 rounded-full">Claude Code</span>
+                        <span class="bg-gray-700 text-gray-200 text-xs px-2.5 py-1 rounded-full">Shell</span>
+                        <span class="bg-gray-700 text-gray-200 text-xs px-2.5 py-1 rounded-full">Metabase</span>
+                        <span class="bg-gray-700 text-gray-200 text-xs px-2.5 py-1 rounded-full">API</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mt-auto">
+                        <button data-modal="portfolioModal5" class="modal-open-btn text-sm font-mono border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white rounded-lg py-1.5 transition-all duration-300 cursor-pointer">View Details</button>
+                        <a href="https://github.com/ccristil/metabase-skills" target="_blank" class="text-sm font-mono border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white rounded-lg py-1.5 text-center transition-all duration-300">
+                            <i class="fa-brands fa-github"></i> GitHub
+                        </a>
+                    </div>
+                </div>
+
             </div>
         </section>
 
@@ -377,6 +397,7 @@
                         <span class="bg-purple-500 text-white text-sm px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-purple-400 hover:shadow-lg hover:shadow-purple-500/25">Metabase</span>
                         <span class="bg-purple-500 text-white text-sm px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-purple-400 hover:shadow-lg hover:shadow-purple-500/25">Quicksight</span>
                         <span class="bg-purple-500 text-white text-sm px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-purple-400 hover:shadow-lg hover:shadow-purple-500/25">Excel</span>
+                        <span class="bg-purple-500 text-white text-sm px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-purple-400 hover:shadow-lg hover:shadow-purple-500/25">Claude Code</span>
                     </div>
                 </div>
 
@@ -640,6 +661,36 @@
                     <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">Elevenlabs</span>
                     <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">GCP</span>
                     <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">Postgres</span>
+                </div>
+            </div>
+            <div class="flex justify-end px-6 py-4 border-t border-white/10">
+                <button class="modal-close-btn bg-gray-700 hover:bg-gray-600 text-white text-sm px-4 py-2 rounded-lg transition-colors cursor-pointer">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Portfolio Modal 5: mb-skills -->
+    <div id="portfolioModal5" class="modal-backdrop fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="modal-panel glass-card rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-white/10">
+                <h3 class="font-mono font-bold text-lg">Metabase Skills</h3>
+                <button class="modal-close-btn text-gray-400 hover:text-white text-2xl cursor-pointer">&times;</button>
+            </div>
+            <div class="px-6 py-4 text-gray-300 text-sm space-y-3">
+                <p><strong class="text-white">Date:</strong> May 2026 - Present</p>
+                <p><strong class="text-white">Summary:</strong></p>
+                <ul class="list-disc list-inside space-y-1 text-gray-400">
+                    <li>Built a collection of 9 Claude Code skills that let you interact with any Metabase instance using plain English; no manual API calls required.</li>
+                    <li>Skills cover the full Metabase surface area: running SQL queries, browsing dashboards, inspecting tables, creating saved questions, and managing models.</li>
+                    <li>Designed for zero-dependency setup — just copy the skill directories and drop in a <code class="text-purple-300">.env</code> file with your Metabase URL and API key.</li>
+                    <li>Uses X-API-Key header authentication, following Metabase's recommended approach for programmatic access.</li>
+                </ul>
+                <p><strong class="text-white">Technologies:</strong></p>
+                <div class="flex flex-wrap gap-2">
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">Claude Code</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">Shell</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">Metabase</span>
+                    <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">API</span>
                 </div>
             </div>
             <div class="flex justify-end px-6 py-4 border-t border-white/10">
