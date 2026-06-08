@@ -173,6 +173,22 @@
             from { opacity: 0; transform: scale(0.95) translateY(10px); }
             to { opacity: 1; transform: scale(1) translateY(0); }
         }
+
+        /* Hero banner animations */
+        @keyframes heroFadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        /* Hero element animation classes */
+        .hero-name {
+            animation: heroFadeUp 0.5s ease both 0.1s;
+        }
+        .hero-tagline {
+            animation: heroFadeUp 0.5s ease both 0.35s;
+        }
+        .hero-btn {
+            animation: heroFadeUp 0.5s ease both 0.55s;
+        }
     </style>
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans overflow-x-hidden">
@@ -243,9 +259,9 @@
         <div class="absolute inset-0 bg-black/40"></div>
         <div class="absolute inset-0 bg-gradient-to-t from-gray-950 via-transparent to-transparent"></div>
         <div class="relative z-10 text-center px-4">
-            <h1 class="text-4xl md:text-6xl font-bold text-white tracking-tight">Cristian Cruz</h1>
-            <p class="text-sm md:text-base font-mono text-gray-300 mt-3"><b>Data</b> informs decisions. <b>People</b> make them. I love working with <b>both.</b></p>
-            <div class="mt-6">
+            <h1 class="hero-name text-4xl md:text-6xl font-bold text-white tracking-tight">Cristian Cruz</h1>
+            <p class="hero-tagline text-sm md:text-base font-mono text-gray-300 mt-3"><b>Data</b> informs decisions. <b>People</b> make them. I love working with <b>both.</b></p>
+            <div class="hero-btn mt-6">
                 <button onclick="openResumeModal()"
                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-mono text-sm rounded-lg backdrop-blur-sm transition-all duration-200 cursor-pointer">
                     <i class="fa-solid fa-file-arrow-down"></i>
