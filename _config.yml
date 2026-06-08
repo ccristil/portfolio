@@ -1,5 +1,8 @@
 title: Cristian Cruz
-description: Portfolio & Blog
+description: Portfolio
+
+include:
+  - llms.txt
 
 # Collections for blog posts
 collections:

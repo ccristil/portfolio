@@ -1,0 +1,36 @@
+# Cristian Cruz
+
+> Data Enthusiast with expertise in Python, SQL, machine learning, and full-stack development. Portfolio showcasing data engineering, ML pipelines, and web development projects.
+
+## Skills
+
+- **Languages**: Python, Pandas, SQL, JavaScript, PHP, C#, HTML, CSS
+- **ML / Data**: PyTorch, scikit-learn, HuggingFace, SentenceTransformers
+- **Tools & Platforms**: Node.js, Fivetran, Domo, Tableau, Metabase, Quicksight, Excel, Claude Code
+- **Cloud & DevOps**: GitHub, Snowflake, AWS, GCP, Docker
+
+## Projects
+
+- [ML Real Estate Pipeline](https://github.com/ccristil): ML pipeline predicting home prices in Utah using Python, Pandas, scikit-learn, matplotlib, and PyTorch
+- [Semantic Scripture Search App](https://bom275.streamlit.app): Chat-like app for semantic verse searching using Python, Pandas, HuggingFace, Streamlit, and SentenceTransformers
+- [API From Scratch](https://github.com/ccristil): Full-scale API with custom endpoints and models built with ASP.NET, SQLite, and C#
+- [Risa Running](https://github.com/ccristil): iOS app for live running coaching using Python, Flask, Grok, Elevenlabs, GCP, and Postgres
+- [Metabase Skills](https://github.com/ccristil/metabase-skills): Claude Code skills for Metabase interaction using Claude Code, Shell, and Metabase API
+- [EdTech Privacy Audit](https://github.com/ccristil): Web scraping and data analysis research using Python, Beautiful Soup, and OpenAI API — published at AMCIS 2025
+
+## Experience
+
+- Technical Consultant at ClearSquare (Apr 2025 - Present)
+- Research Assistant at BYU IS Department (Dec 2024 - May 2025)
+- Web Developer at BYU Police & Security (Apr 2024 - Apr 2025)
+- Web Developer at BYU Chinese & Arabic Flagships (Aug 2023 - Apr 2024)
+
+## Education
+
+- GPA 3.7, MSS Scholarship Recipient (Full Ride)
+- Coursework: Exploratory Data Analysis, Database Systems, Machine Learning, Data Structures & Algorithms
+
+## Links
+
+- [LinkedIn](https://linkedin.com/in/cristianlukecruz)
+- [GitHub](https://github.com/ccristil)
