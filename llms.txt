@@ -1,6 +1,6 @@
 # Cristian Cruz
 
-> Data Enthusiast with expertise in Python, SQL, machine learning, and full-stack development. Portfolio showcasing data engineering, ML pipelines, and web development projects.
+> Data informs decisions. People make them. I love working with both. Portfolio spanning data engineering, ML pipelines, consulting tooling, and applied research.
 
 ## Skills
 
@@ -11,12 +11,12 @@
 
 ## Projects
 
-- [ML Real Estate Pipeline](https://github.com/ccristil): ML pipeline predicting home prices in Utah using Python, Pandas, scikit-learn, matplotlib, and PyTorch
-- [Semantic Scripture Search App](https://bom275.streamlit.app): Chat-like app for semantic verse searching using Python, Pandas, HuggingFace, Streamlit, and SentenceTransformers
-- [API From Scratch](https://github.com/ccristil): Full-scale API with custom endpoints and models built with ASP.NET, SQLite, and C#
-- [Risa Running](https://github.com/ccristil): iOS app for live running coaching using Python, Flask, Grok, Elevenlabs, GCP, and Postgres
-- [Metabase Skills](https://github.com/ccristil/metabase-skills): Claude Code skills for Metabase interaction using Claude Code, Shell, and Metabase API
-- [EdTech Privacy Audit](https://github.com/ccristil): Web scraping and data analysis research using Python, Beautiful Soup, and OpenAI API — published at AMCIS 2025
+- [Risa Running](https://github.com/ccristil): A personal iOS running coach — designed the data schema, built the backend API, and shipped a live app using Python, Flask, Grok, Elevenlabs, GCP, and Postgres
+- [Metabase Skills](https://github.com/ccristil/metabase-skills): Claude Code skills to automate workflows born from real client needs across dozens of consulting engagements — built with Claude Code, Shell, and Metabase API
+- [EdTech Privacy Audit](https://aisel.aisnet.org/amcis2025/sig_sec/sig_sec/2/): Published at AMCIS 2025 — built ETL pipelines to audit privacy practices across EdTech apps, saving 40+ hours of manual analysis; used Python, Beautiful Soup, and OpenAI API
+- [BYU Police Operations System](https://github.com/ccristil): Designed a full relational data model from stakeholder conversations with police leadership, then built and documented the entire system for handoff using Data Modeling, SQLite, and C#
+- [ML Real Estate Pipeline](https://colab.research.google.com/drive/15PrdCOcAKhHmHHRoCnjwcCZYT9zh4Xf1?usp=sharing): End-to-end ML pipeline predicting Utah home prices — from raw API data to model evaluation, feature engineering, and a written findings report; used Python, Pandas, scikit-learn, matplotlib, and PyTorch
+- [Semantic Scripture Search App](https://bom275.streamlit.app): Built a semantic search engine for scripture — trained custom NLP models to match plain language queries to relevant verses using Python, HuggingFace, Streamlit, and SentenceTransformers
 
 ## Experience
 

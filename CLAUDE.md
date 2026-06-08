@@ -46,6 +46,12 @@ This is a personal portfolio website. Claude should make targeted, minimal chang
 3. **One thing at a time** - Handle one request per session if possible
 4. **Explain impact** - Clarify what breaks, what improves, what risks exist
 
+## Positioning & Voice
+
+- **Tagline**: "Data informs decisions. People make them. I love working with both." — this is the professional positioning line in the hero banner. Do not revert to "data enthusiast".
+- **Core message**: Cristian bridges data and people. Project descriptions should reinforce this angle — not just technical skills, but impact on stakeholders and decisions.
+- When writing or editing copy, match this tone: confident, specific, human. Avoid generic phrases like "leveraged" or "utilized".
+
 ## File Structure Context
 - `/assets` - Static assets (images, `site.css`)
 - `/blog` - Blog feature (beta, hidden)
@@ -53,6 +59,7 @@ This is a personal portfolio website. Claude should make targeted, minimal chang
 - `index.html` - Main production portfolio page
 - `blog.html` - Blog page (beta, hidden)
 - `modals.html` - Modal components
+- `llms.txt` - Machine-readable portfolio summary — keep in sync with `index.html` content
 
 ## Technology Stack
 - **Framework**: Vanilla HTML + CSS + JavaScript (no build step)
