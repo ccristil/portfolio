@@ -1,0 +1,59 @@
+<h2>Final design preview</h2>
+<p class="subtitle">Rounded square photo in a banner card — does this look right?</p>
+
+<div class="mockup">
+  <div class="mockup-header">Get to Know Me — Section Preview</div>
+  <div class="mockup-body">
+    <div style="background:#030712;padding:28px;font-family:'Inter',sans-serif;color:#e2e8f0">
+
+      <!-- Section heading -->
+      <div style="font-size:22px;font-weight:700;margin-bottom:8px;letter-spacing:-0.02em">Get to Know Me</div>
+
+      <!-- Banner card -->
+      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;display:flex;align-items:center;gap:20px;margin-bottom:16px;backdrop-filter:blur(8px)">
+        <img src="/assets/me.png"
+          style="width:96px;height:96px;border-radius:16px;object-fit:cover;object-position:center;flex-shrink:0;border:2px solid rgba(167,139,250,0.35)"
+          onerror="this.style.background='linear-gradient(135deg,#7c3aed,#4f46e5)';this.style.display='flex';this.removeAttribute('src')">
+        <div>
+          <div style="font-size:13px;color:#94a3b8;line-height:1.7">
+            Outside of work, I'm someone who loves running, fishing, and spending time with my wife and kiddos. Below are a few more details about me, feel free to connect on Strava if you love to run as well!
+          </div>
+        </div>
+      </div>
+
+      <!-- 2-col grid -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:12px;overflow:hidden">
+          <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.08);font-size:11px;font-weight:700;font-family:monospace;display:flex;align-items:center;gap:6px">
+            <span style="color:#D5003B">&#xf179;</span> Current Favorite Song
+          </div>
+          <div style="padding:14px;height:60px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#64748b">Apple Music embed</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:12px;overflow:hidden">
+          <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.08);font-size:11px;font-weight:700;font-family:monospace;display:flex;align-items:center;gap:6px">
+            <span style="color:#fb923c">&#xf428;</span> This Week on Strava
+          </div>
+          <div style="padding:14px;height:60px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#64748b">Strava embed</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="options" style="margin-top:20px">
+  <div class="option" data-choice="approved" onclick="toggleSelect(this)">
+    <div class="letter">✓</div>
+    <div class="content">
+      <h3>Looks good — let's build it</h3>
+      <p>Proceed with this design</p>
+    </div>
+  </div>
+  <div class="option" data-choice="tweak" onclick="toggleSelect(this)">
+    <div class="letter">~</div>
+    <div class="content">
+      <h3>Needs a tweak</h3>
+      <p>I'll describe what to change in the terminal</p>
+    </div>
+  </div>
+</div>

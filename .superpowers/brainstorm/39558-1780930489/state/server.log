@@ -1,0 +1,4 @@
+{"type":"server-started","port":51687,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:51687","screen_dir":"/Users/cristiancruz/WebstormProjects/portfolio/.superpowers/brainstorm/39558-1780930489/content","state_dir":"/Users/cristiancruz/WebstormProjects/portfolio/.superpowers/brainstorm/39558-1780930489/state"}
+{"type":"screen-added","file":"/Users/cristiancruz/WebstormProjects/portfolio/.superpowers/brainstorm/39558-1780930489/content/animation-styles.html"}
+{"type":"screen-added","file":"/Users/cristiancruz/WebstormProjects/portfolio/.superpowers/brainstorm/39558-1780930489/content/waiting-1.html"}
+{"type":"server-stopped","reason":"idle timeout"}

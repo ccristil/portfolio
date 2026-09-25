@@ -4,9 +4,9 @@
 
 ## Skills
 
-- **Languages**: Python, Pandas, SQL, JavaScript, PHP, C#, HTML, CSS
+- **Languages**: TypeScript, Python, Pandas, SQL, JavaScript, PHP, C#, HTML, CSS
 - **ML / Data**: PyTorch, scikit-learn, HuggingFace, SentenceTransformers
-- **Tools & Platforms**: Node.js, Fivetran, Domo, Tableau, Metabase, Quicksight, Excel, Claude Code
+- **Tools & Platforms**: Claude Code, Node.js, Fivetran, Domo, Tableau, Metabase, Quicksight, Excel
 - **Cloud & DevOps**: GitHub, Snowflake, AWS, GCP, Docker
 
 ## Projects
@@ -20,7 +20,8 @@
 
 ## Experience
 
-- Technical Consultant at ClearSquare (Apr 2025 - Present)
+- Product Engineer at LeaderFactor, Lehi UT (Aug 2026 - Present)
+- Technical Consultant at ClearSquare (Apr 2025 - Aug 2026)
 - Research Assistant at BYU IS Department (Dec 2024 - May 2025)
 - Web Developer at BYU Police & Security (Apr 2024 - Apr 2025)
 - Web Developer at BYU Chinese & Arabic Flagships (Aug 2023 - Apr 2024)

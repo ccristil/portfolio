@@ -1,0 +1,156 @@
+<style>
+  .demo-box {
+    background: #030712;
+    border-radius: 10px;
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 110px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .demo-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  .demo-tagline {
+    font-size: 0.7rem;
+    font-family: 'Courier New', monospace;
+    color: #9ca3af;
+    margin-top: 6px;
+  }
+  .demo-btn {
+    margin-top: 10px;
+    font-size: 0.65rem;
+    font-family: monospace;
+    color: #9ca3af;
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.05);
+  }
+
+  /* Option A: Fade up stagger */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade-a .demo-name    { animation: fadeUp 0.6s ease both; animation-delay: 0.1s; }
+  .fade-a .demo-tagline { animation: fadeUp 0.6s ease both; animation-delay: 0.35s; }
+  .fade-a .demo-btn     { animation: fadeUp 0.6s ease both; animation-delay: 0.55s; }
+
+  /* Option B: Typewriter on tagline */
+  @keyframes fadeUpB {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes typing {
+    from { width: 0; }
+    to   { width: 100%; }
+  }
+  @keyframes blink {
+    50% { border-color: transparent; }
+  }
+  .fade-b .demo-name    { animation: fadeUpB 0.5s ease both 0.1s; }
+  .fade-b .demo-tagline {
+    overflow: hidden;
+    white-space: nowrap;
+    border-right: 2px solid #6b7280;
+    width: 0;
+    animation:
+      typing 1.4s steps(44, end) both 0.5s,
+      blink 0.75s step-end 0.5s 4;
+  }
+  .fade-b .demo-btn     { animation: fadeUpB 0.5s ease both 2.1s; }
+
+  /* Option C: Blur-in */
+  @keyframes blurIn {
+    from { opacity: 0; filter: blur(8px); transform: scale(0.97); }
+    to   { opacity: 1; filter: blur(0);   transform: scale(1); }
+  }
+  .fade-c .demo-name    { animation: blurIn 0.7s ease both 0.1s; }
+  .fade-c .demo-tagline { animation: blurIn 0.7s ease both 0.4s; }
+  .fade-c .demo-btn     { animation: blurIn 0.7s ease both 0.65s; }
+
+  /* replay button */
+  .replay-btn {
+    font-size: 0.65rem;
+    font-family: monospace;
+    color: #6b7280;
+    background: none;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px;
+    padding: 2px 8px;
+    cursor: pointer;
+    display: block;
+    margin: 0 auto 4px;
+  }
+  .replay-btn:hover { color: #d1d5db; }
+</style>
+
+<h2>Which animation style feels right?</h2>
+<p class="subtitle">All three animate on page load. Click an option to select it, or just tell me in the terminal.</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px 16px 0">
+      <div class="demo-box fade-a" id="demoA">
+        <div class="demo-name">Cristian Cruz</div>
+        <div class="demo-tagline">Data informs decisions. People make them. I love working with both.</div>
+        <div class="demo-btn">Resume</div>
+      </div>
+      <button class="replay-btn" onclick="event.stopPropagation();replay('A')">↺ replay</button>
+    </div>
+    <div class="card-body">
+      <h3>A — Fade Up (staggered)</h3>
+      <p>Name, tagline, and button drift up and fade in one after another. Clean, professional, widely used on dev portfolios.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px 16px 0">
+      <div class="demo-box fade-b" id="demoB">
+        <div class="demo-name">Cristian Cruz</div>
+        <div class="demo-tagline">Data informs decisions. People make them. I love working with both.</div>
+        <div class="demo-btn">Resume</div>
+      </div>
+      <button class="replay-btn" onclick="event.stopPropagation();replay('B')">↺ replay</button>
+    </div>
+    <div class="card-body">
+      <h3>B — Typewriter on tagline</h3>
+      <p>Name fades in, then the tagline types itself out character by character. Fits the monospace font perfectly and reinforces the "data/tech" feel.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px 16px 0">
+      <div class="demo-box fade-c" id="demoC">
+        <div class="demo-name">Cristian Cruz</div>
+        <div class="demo-tagline">Data informs decisions. People make them. I love working with both.</div>
+        <div class="demo-btn">Resume</div>
+      </div>
+      <button class="replay-btn" onclick="event.stopPropagation();replay('C')">↺ replay</button>
+    </div>
+    <div class="card-body">
+      <h3>C — Blur-in (staggered)</h3>
+      <p>Elements materialize from a soft blur — slightly more dramatic than a plain fade. Cinematic without being overdone.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function replay(opt) {
+  const el = document.getElementById('demo' + opt);
+  const cls = {A:'fade-a',B:'fade-b',C:'fade-c'}[opt];
+  el.classList.remove(cls);
+  void el.offsetWidth;
+  el.classList.add(cls);
+}
+</script>

@@ -1,0 +1,63 @@
+<h2>What shape for the photo?</h2>
+<p class="subtitle">All using the same banner card layout from Option C</p>
+
+<div class="cards">
+
+  <!-- Circle -->
+  <div class="card" data-choice="circle" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#0f172a;padding:16px;border-radius:8px;font-family:sans-serif;color:#e2e8f0">
+        <div style="background:#1e293b;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px;display:flex;align-items:center;gap:16px">
+          <img src="/assets/me.png" style="width:72px;height:72px;border-radius:50%;object-fit:cover;object-position:center;flex-shrink:0;border:2px solid rgba(167,139,250,0.4)" onerror="this.style.background='linear-gradient(135deg,#7c3aed,#4f46e5)';this.removeAttribute('src')">
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#e2e8f0;margin-bottom:4px">Cristian Cruz</div>
+            <div style="font-size:9px;color:#94a3b8;line-height:1.5">Outside of work, I'm someone who loves running, fishing, and spending time with my wife and kiddos...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Circle</h3>
+      <p>Classic headshot feel. Clean and personal.</p>
+    </div>
+  </div>
+
+  <!-- Rounded square -->
+  <div class="card" data-choice="rounded" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#0f172a;padding:16px;border-radius:8px;font-family:sans-serif;color:#e2e8f0">
+        <div style="background:#1e293b;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px;display:flex;align-items:center;gap:16px">
+          <img src="/assets/me.png" style="width:72px;height:72px;border-radius:16px;object-fit:cover;object-position:center;flex-shrink:0;border:2px solid rgba(167,139,250,0.4)" onerror="this.style.background='linear-gradient(135deg,#7c3aed,#4f46e5)';this.removeAttribute('src')">
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#e2e8f0;margin-bottom:4px">Cristian Cruz</div>
+            <div style="font-size:9px;color:#94a3b8;line-height:1.5">Outside of work, I'm someone who loves running, fishing, and spending time with my wife and kiddos...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Rounded Square</h3>
+      <p>Matches the card aesthetic. Modern and consistent with the rest of the page.</p>
+    </div>
+  </div>
+
+  <!-- Larger portrait -->
+  <div class="card" data-choice="portrait" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#0f172a;padding:16px;border-radius:8px;font-family:sans-serif;color:#e2e8f0">
+        <div style="background:#1e293b;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px;display:flex;align-items:center;gap:16px">
+          <img src="/assets/me.png" style="width:56px;height:80px;border-radius:10px;object-fit:cover;object-position:center top;flex-shrink:0;border:2px solid rgba(167,139,250,0.4)" onerror="this.style.background='linear-gradient(135deg,#7c3aed,#4f46e5)';this.removeAttribute('src')">
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#e2e8f0;margin-bottom:4px">Cristian Cruz</div>
+            <div style="font-size:9px;color:#94a3b8;line-height:1.5">Outside of work, I'm someone who loves running, fishing, and spending time with my wife and kiddos...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Portrait (taller)</h3>
+      <p>Shows more of the photo. Works well if the image is a full-body or mid-shot.</p>
+    </div>
+  </div>
+
+</div>
