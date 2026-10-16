@@ -11,6 +11,7 @@
 
 ## Projects
 
+- [Saturn V Presentation](https://github.com/ccristil/saturn-v): An interactive 3D walkthrough of the Saturn V built for a live 30-minute talk to a product team — custom-modeled Apollo spacecraft, animated mission sequences, and to-scale comparisons; built with TypeScript, React, Three.js, Vite, and OpenLayers
 - [Risa Running](https://github.com/ccristil): A personal iOS running coach — designed the data schema, built the backend API, and shipped a live app using Python, Flask, Grok, Elevenlabs, GCP, and Postgres
 - [Metabase Skills](https://github.com/ccristil/metabase-skills): Claude Code skills to automate workflows born from real client needs across dozens of consulting engagements — built with Claude Code, Shell, and Metabase API
 - [EdTech Privacy Audit](https://aisel.aisnet.org/amcis2025/sig_sec/sig_sec/2/): Published at AMCIS 2025 — built ETL pipelines to audit privacy practices across EdTech apps, saving 40+ hours of manual analysis; used Python, Beautiful Soup, and OpenAI API

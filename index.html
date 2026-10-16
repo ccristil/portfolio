@@ -176,6 +176,11 @@
         border-color: rgba(255, 255, 255, 0.15);
       }
 
+      /* Projects past the first six stay hidden until "More projects" is clicked */
+      #project-grid:not(.show-all) > .tilt-card:nth-child(n + 7) {
+        display: none;
+      }
+
       /* Horizontal timeline - desktop */
       @media (min-width: 1140px) {
         .timeline-items {
@@ -527,7 +532,7 @@
       <!-- ===== PORTFOLIO ===== -->
       <section id="portfolio" class="py-20">
         <h2 class="section-heading text-3xl font-bold mb-10">Portfolio</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div id="project-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <!-- Card: Saturn V Presentation -->
           <div class="tilt-card glass-card rounded-xl p-6 flex flex-col h-full">
             <h3 class="font-mono font-bold text-lg mb-2">
@@ -874,6 +879,14 @@
               </a>
             </div>
           </div>
+        </div>
+        <div class="flex justify-center mt-8">
+          <button
+            id="more-projects-btn"
+            class="text-sm font-mono border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white rounded-lg px-5 py-2 transition-all duration-300 cursor-pointer"
+          >
+            More projects <i class="fa-solid fa-chevron-down ml-1"></i>
+          </button>
         </div>
       </section>
 
@@ -2349,6 +2362,19 @@
               modal.classList.add("hidden");
             });
         }
+      });
+
+      // 4. "More projects" toggle
+      const projectGrid = document.getElementById("project-grid");
+      const moreProjectsBtn = document.getElementById("more-projects-btn");
+      if (projectGrid.querySelectorAll(".tilt-card").length <= 6) {
+        moreProjectsBtn.parentElement.classList.add("hidden");
+      }
+      moreProjectsBtn.addEventListener("click", () => {
+        const showAll = projectGrid.classList.toggle("show-all");
+        moreProjectsBtn.innerHTML = showAll
+          ? 'Show fewer <i class="fa-solid fa-chevron-up ml-1"></i>'
+          : 'More projects <i class="fa-solid fa-chevron-down ml-1"></i>';
       });
 
       // ===== RESUME PDF PREVIEW =====
