@@ -180,6 +180,26 @@
       #project-grid:not(.show-all) > .tilt-card:nth-child(n + 7) {
         display: none;
       }
+      #project-grid {
+        transition: height 0.5s ease;
+      }
+      #project-grid.show-all > .tilt-card:nth-child(n + 7) {
+        animation: project-reveal 0.5s ease;
+      }
+      @keyframes project-reveal {
+        from {
+          opacity: 0;
+          transform: translateY(16px);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #project-grid {
+          transition: none;
+        }
+        #project-grid.show-all > .tilt-card:nth-child(n + 7) {
+          animation: none;
+        }
+      }
 
       /* Horizontal timeline - desktop */
       @media (min-width: 1140px) {
@@ -1195,7 +1215,7 @@
                 height="175"
                 width="100%"
                 title="Media player"
-                src="https://embed.music.apple.com/us/album/superheroes/697194953?i=697195890&amp;itscg=30200&amp;itsct=music_box_player&amp;ls=1&amp;app=music&amp;mttnsubad=697195890&amp;theme=auto"
+                src="https://embed.music.apple.com/us/album/slack/1752772643?i=1752772647&amp;theme=auto"
                 id="embedPlayer"
                 sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"
                 allow="autoplay *; encrypted-media *; clipboard-write"
@@ -2370,11 +2390,39 @@
       if (projectGrid.querySelectorAll(".tilt-card").length <= 6) {
         moreProjectsBtn.parentElement.classList.add("hidden");
       }
+      let projectsAnimating = false;
       moreProjectsBtn.addEventListener("click", () => {
-        const showAll = projectGrid.classList.toggle("show-all");
-        moreProjectsBtn.innerHTML = showAll
+        if (projectsAnimating) return;
+        const opening = !projectGrid.classList.contains("show-all");
+        // Measure the grid's height in both states, then animate between them
+        const startHeight = projectGrid.offsetHeight;
+        projectGrid.classList.toggle("show-all");
+        const endHeight = projectGrid.offsetHeight;
+        // Keep the extra cards visible while collapsing; hide them once it finishes
+        if (!opening) projectGrid.classList.add("show-all");
+        moreProjectsBtn.innerHTML = opening
           ? 'Show fewer <i class="fa-solid fa-chevron-up ml-1"></i>'
           : 'More projects <i class="fa-solid fa-chevron-down ml-1"></i>';
+        const finish = () => {
+          if (!opening) projectGrid.classList.remove("show-all");
+          projectGrid.style.height = "";
+          projectGrid.style.overflow = "";
+          projectsAnimating = false;
+        };
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          finish();
+          return;
+        }
+        projectsAnimating = true;
+        projectGrid.style.overflow = "hidden";
+        projectGrid.style.height = startHeight + "px";
+        projectGrid.offsetHeight; // force reflow so the transition starts from startHeight
+        projectGrid.style.height = endHeight + "px";
+        projectGrid.addEventListener("transitionend", function onEnd(e) {
+          if (e.target !== projectGrid || e.propertyName !== "height") return;
+          projectGrid.removeEventListener("transitionend", onEnd);
+          finish();
+        });
       });
 
       // ===== RESUME PDF PREVIEW =====
