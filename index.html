@@ -3,6 +3,30 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Load intro gate: runs before first paint so nothing flashes.
+         Plays once per tab session; skipped for reduced motion. -->
+    <script>
+      (function () {
+        var root = document.documentElement;
+        try {
+          if (
+            sessionStorage.getItem("introSeen") ||
+            window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          )
+            return;
+          sessionStorage.setItem("introSeen", "1");
+        } catch (e) {
+          return;
+        }
+        root.classList.add("intro");
+        // Safety net: never leave the page hidden if the intro script fails.
+        window.introFallback = setTimeout(function () {
+          root.className = root.className.replace(/\bintro(-\w+)?\b/g, "");
+          root.classList.add("intro-done");
+          document.dispatchEvent(new Event("intro:done"));
+        }, 7000);
+      })();
+    </script>
     <title>Cristian Cruz | Portfolio</title>
 
     <!-- Tailwind CSS CDN -->
@@ -352,6 +376,96 @@
           animation: none;
         }
       }
+      /* ===== Load intro (cursor → white bar → name) =====
+         Everything here is scoped to html.intro, which the gate script in
+         <head> adds on the first load of a session. The timeline lives in the
+         intro script at the end of <body>. */
+      html.intro header,
+      html.intro main,
+      html.intro footer,
+      html.intro #hero > :not(.hero-text),
+      html.intro .hero-btn {
+        opacity: 0;
+      }
+      html.intro.intro-out header,
+      html.intro.intro-out main,
+      html.intro.intro-out footer,
+      html.intro.intro-out #hero > :not(.hero-text),
+      html.intro.intro-out .hero-btn {
+        opacity: 1;
+        transition: opacity 0.9s ease;
+      }
+      /* The old fade-up entrance would fight the intro, and would replay
+         when .intro is removed — keep it off for the rest of the visit. */
+      html.intro .hero-name,
+      html.intro .hero-tagline,
+      html.intro .hero-btn,
+      html.intro-done .hero-name,
+      html.intro-done .hero-tagline,
+      html.intro-done .hero-btn {
+        animation: none;
+      }
+      html.intro:not(.intro-s3) .hero-name,
+      html.intro:not(.intro-s5) .hero-tagline {
+        color: transparent;
+      }
+      /* Clicks during the intro only skip it; they must not land on the
+         still-invisible nav or Resume button underneath. */
+      html.intro body {
+        pointer-events: none;
+      }
+      html:not(.intro) .intro-bar {
+        display: none;
+      }
+      .intro-bar {
+        position: absolute;
+        background: #fff;
+        pointer-events: none;
+        transform-origin: 50% 50%;
+      }
+      /* Name bar starts as a 2px cursor (--intro-s0 = 2 / bar width), blinks
+         3x, stretches to full width, then retracts to the right. */
+      .intro-bar--name {
+        opacity: 0;
+        transform: scaleX(var(--intro-s0, 0));
+        transition: transform 0.55s cubic-bezier(0.7, 0, 0.2, 1);
+      }
+      html.intro-s1 .intro-bar--name {
+        animation: introBlink 0.5s step-end 3;
+      }
+      html.intro-s2 .intro-bar--name {
+        animation: none;
+        opacity: 1;
+        transform: scaleX(1);
+      }
+      html.intro-s3 .intro-bar--name {
+        transform-origin: 100% 50%;
+        transform: scaleX(0);
+        transition-duration: 0.5s;
+      }
+      /* Tagline bar grows left → right, then retracts to the right. */
+      .intro-bar--tagline {
+        transform: scaleX(0);
+        transform-origin: 0 50%;
+        transition: transform 0.4s cubic-bezier(0.7, 0, 0.2, 1);
+      }
+      html.intro-s4 .intro-bar--tagline {
+        transform: scaleX(1);
+      }
+      html.intro-s5 .intro-bar--tagline {
+        transform-origin: 100% 50%;
+        transform: scaleX(0);
+      }
+      @keyframes introBlink {
+        0%,
+        49.9% {
+          opacity: 1;
+        }
+        50%,
+        100% {
+          opacity: 0;
+        }
+      }
     </style>
   </head>
   <body class="bg-gray-950 text-gray-100 font-sans overflow-x-hidden">
@@ -505,6 +619,7 @@
 
     <!-- ===== HERO BANNER ===== -->
     <section
+      id="hero"
       class="relative w-full h-[600px] overflow-hidden flex items-center justify-center"
     >
       <img
@@ -516,7 +631,7 @@
       <div
         class="absolute inset-0 bg-gradient-to-t from-gray-950 via-transparent to-transparent"
       ></div>
-      <div class="relative z-10 text-center px-4">
+      <div class="hero-text relative z-10 text-center px-4">
         <h1
           class="hero-name text-4xl md:text-6xl font-bold text-white tracking-tight"
         >
@@ -2524,7 +2639,7 @@
         let i = 0;
         text.textContent = words[0];
 
-        setInterval(() => {
+        const startCycling = () => setInterval(() => {
           const next = (i + 1) % words.length;
           const from = words[i],
             to = words[next];
@@ -2556,6 +2671,95 @@
           erase();
           i = next;
         }, PERIOD_MS);
+
+        // Hold on the first word until the load intro has finished.
+        if (document.documentElement.classList.contains("intro"))
+          document.addEventListener("intro:done", startCycling, { once: true });
+        else startCycling();
+      })();
+
+      /* Load intro — cursor blinks, stretches into a white bar, wipes to
+         reveal the name and tagline in place, then the rest of the page fades in.
+         Only runs when the <head> gate added .intro to <html>. */
+      (() => {
+        const root = document.documentElement;
+        if (!root.classList.contains("intro")) return;
+
+        const heroText = document.querySelector("#hero .hero-text");
+        const name = heroText.querySelector(".hero-name");
+        const line = heroText.querySelector(".hero-line-inner");
+        const STEPS = [
+          [300, "intro-s1"], // cursor blinks 3x
+          [1900, "intro-s2"], // cursor stretches into a bar
+          [2550, "intro-s3"], // name shown, bar wipes right
+          [2950, "intro-s4"], // tagline bar grows
+          [3350, "intro-s5"], // tagline shown, bar wipes right
+          [3800, "intro-out"], // rest of the page fades in
+        ];
+        const DONE_MS = 4700;
+        const SKIP_EVENTS = ["pointerdown", "keydown", "wheel", "touchstart", "scroll"];
+        const BAR_PAD = 4;
+        const timers = [];
+        const bars = [];
+        let done = false;
+
+        // Box around the rendered glyphs, not the (full-width) block element.
+        const textRect = (el) => {
+          const range = document.createRange();
+          range.selectNodeContents(el);
+          return range.getBoundingClientRect();
+        };
+        const addBar = (rect, cls, box) => {
+          const bar = document.createElement("span");
+          bar.className = "intro-bar " + cls;
+          bar.setAttribute("aria-hidden", "true");
+          const width = rect.width + BAR_PAD * 2;
+          Object.assign(bar.style, {
+            left: rect.left - box.left - BAR_PAD + "px",
+            top: rect.top - box.top + "px",
+            width: width + "px",
+            height: rect.height + "px",
+          });
+          bar.style.setProperty("--intro-s0", (2 / width).toFixed(4));
+          heroText.appendChild(bar);
+          bars.push(bar);
+        };
+
+        const finish = () => {
+          if (done) return;
+          done = true;
+          timers.forEach(clearTimeout);
+          clearTimeout(window.introFallback);
+          SKIP_EVENTS.forEach((ev) => window.removeEventListener(ev, finish));
+          bars.forEach((bar) => bar.remove());
+          root.classList.remove("intro", ...STEPS.map(([, cls]) => cls));
+          root.classList.add("intro-done");
+          document.dispatchEvent(new Event("intro:done"));
+        };
+        SKIP_EVENTS.forEach((ev) =>
+          window.addEventListener(ev, finish, { passive: true })
+        );
+
+        // This script owns cleanup from here: swap the <head> fallback for a
+        // tighter safety net (max font wait + DONE_MS fits inside it).
+        clearTimeout(window.introFallback);
+        timers.push(setTimeout(finish, 6000));
+
+        // Wait for Inter so the bars match the real text width, but never
+        // hold the black screen more than a second for slow fonts.
+        Promise.race([
+          document.fonts.ready,
+          new Promise((resolve) => setTimeout(resolve, 1000)),
+        ]).then(() => {
+          if (done) return;
+          const box = heroText.getBoundingClientRect();
+          addBar(textRect(name), "intro-bar--name", box);
+          addBar(textRect(line), "intro-bar--tagline", box);
+          STEPS.forEach(([ms, cls]) =>
+            timers.push(setTimeout(() => root.classList.add(cls), ms))
+          );
+          timers.push(setTimeout(finish, DONE_MS));
+        });
       })();
     </script>
 
