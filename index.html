@@ -520,10 +520,10 @@
         height: 52px;
         padding: 0 10px;
         border-radius: 9999px;
+        position: relative;
+        z-index: 1;
         color: rgb(156 163 175);
-        transition:
-          background 0.25s ease,
-          color 0.2s ease;
+        transition: color 0.2s ease;
       }
       .nav-tab:hover,
       .nav-tab.is-active {
@@ -534,9 +534,29 @@
         line-height: 1;
         white-space: nowrap;
       }
-      .nav-tab.is-active {
+      /* One highlight shared by every tab. JS moves it to the active tab, so
+         it glides between items (with a slight overshoot) instead of blinking. */
+      .nav-pill {
+        position: absolute;
+        top: 6px;
+        left: 0;
+        height: 52px;
+        width: 0;
+        border-radius: 9999px;
         background: rgba(255, 255, 255, 0.12);
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        pointer-events: none;
+        transition:
+          transform 0.45s cubic-bezier(0.34, 1.3, 0.64, 1),
+          width 0.45s cubic-bezier(0.34, 1.3, 0.64, 1);
+      }
+      .nav-pill.no-anim {
+        transition: none;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .nav-pill {
+          transition: none;
+        }
       }
       .nav-tab.is-active i {
         color: #a78bfa;
@@ -624,6 +644,7 @@
     <header>
       <div class="nav-dock">
         <nav class="nav-tabs glass font-mono font-bold">
+          <span class="nav-pill" aria-hidden="true"></span>
           <a href="#" data-sec="hero" class="nav-tab"
             ><i class="fa-solid fa-house"></i><span class="lbl">Home</span></a
           >
@@ -2494,19 +2515,69 @@
         "education",
         "get-to-know-me",
       ];
+      const navTabs = document.querySelectorAll(".nav-tab");
+      const navPill = document.querySelector(".nav-pill");
+      let activeSec = null;
+      // While a clicked tab's smooth scroll is running, hold the highlight on
+      // that tab instead of hopping through every section it passes.
+      let clickedSec = null;
+      let clickTimer;
+
+      const setActive = (sec, animate = true) => {
+        const tab = document.querySelector(`.nav-tab[data-sec="${sec}"]`);
+        if (!tab) return;
+        navTabs.forEach((t) => t.classList.toggle("is-active", t === tab));
+        navPill.classList.toggle("no-anim", !animate);
+        navPill.style.width = tab.offsetWidth + "px";
+        navPill.style.transform = `translateX(${tab.offsetLeft}px)`;
+        if (!animate) {
+          navPill.offsetWidth; // apply the jump before re-enabling transitions
+          navPill.classList.remove("no-anim");
+        }
+        activeSec = sec;
+      };
+
       const updateActiveTab = () => {
+        if (clickedSec) return;
         const line = window.innerHeight * 0.35;
         let current = "hero";
         navSections.forEach((id) => {
           const el = document.getElementById(id);
           if (el && el.getBoundingClientRect().top <= line) current = id;
         });
-        document.querySelectorAll(".nav-tab").forEach((tab) => {
-          tab.classList.toggle("is-active", tab.dataset.sec === current);
-        });
+        if (current !== activeSec) setActive(current);
       };
-      window.addEventListener("scroll", updateActiveTab, { passive: true });
+
+      const releaseClick = () => {
+        clickedSec = null;
+        updateActiveTab();
+      };
+      navTabs.forEach((tab) =>
+        tab.addEventListener("click", () => {
+          clickedSec = tab.dataset.sec;
+          setActive(clickedSec);
+          clearTimeout(clickTimer);
+          clickTimer = setTimeout(releaseClick, 1000);
+        })
+      );
+      window.addEventListener(
+        "scroll",
+        () => {
+          if (clickedSec) {
+            clearTimeout(clickTimer);
+            clickTimer = setTimeout(releaseClick, 150);
+          }
+          updateActiveTab();
+        },
+        { passive: true }
+      );
+      // Tab widths change with fonts and the mobile breakpoint: re-place the
+      // highlight without animating.
+      const placePill = () => activeSec && setActive(activeSec, false);
+      window.addEventListener("resize", placePill);
+      document.fonts.ready.then(placePill);
       updateActiveTab();
+      placePill();
 
       // 2. Card 3D tilt effect
       document.querySelectorAll(".tilt-card").forEach((card) => {
