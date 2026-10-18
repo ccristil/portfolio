@@ -157,6 +157,17 @@
         scroll-padding-top: 5rem;
       }
 
+      /* Custom cursor: native shape + size, ink fill with purple edge.
+         Mouse/trackpad only; falls back to system cursors if the SVG fails. */
+      @media (pointer: fine) {
+        html {
+          cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M2 1.5V18.6L6.2 14.7L9 21L11.7 19.8L8.9 13.6H14.6Z' fill='%230b0a12' stroke='%23c084fc' stroke-width='1.5' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E") 2 2, auto;
+        }
+        html :is(a[href], button, [role="button"], summary, .cursor-pointer, .section-heading) {
+          cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M8.5 2a1.5 1.5 0 0 0-1.5 1.5V12.6L5.9 11.5a1.55 1.55 0 0 0-2.2 2.2L8 18.3C9 19.4 10.4 20 11.9 20H14.6C17.1 20 19 18 19 15.6V11.3a1.5 1.5 0 0 0-3 0V10.3a1.5 1.5 0 0 0-3 0V9.5a1.5 1.5 0 0 0-3 0V3.5A1.5 1.5 0 0 0 8.5 2Z' fill='%230b0a12' stroke='%23c084fc' stroke-width='1.5' stroke-linejoin='round' stroke-linecap='round'/%3E%3Cpath d='M10 10.5v2M13 11.3v1.6M16 12.3v1' fill='none' stroke='%23c084fc' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E") 8 2, pointer;
+        }
+      }
+
       /* Section heading underline animation */
       .section-heading {
         display: inline-block;
