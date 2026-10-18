@@ -154,7 +154,7 @@
 
     <style>
       html {
-        scroll-padding-top: 5rem;
+        scroll-padding-top: 6rem;
       }
 
       /* Custom cursor: native shape + size, ink fill with purple edge.
@@ -477,153 +477,160 @@
           opacity: 0;
         }
       }
+
+      /* ===== Glass tab bar (nav) =====
+         Floating iOS-style glass: blurred backdrop, top-left rim light. */
+      .glass {
+        position: relative;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.1),
+          rgba(255, 255, 255, 0.04)
+        );
+        -webkit-backdrop-filter: blur(18px) saturate(180%);
+        backdrop-filter: blur(18px) saturate(180%);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.22),
+          inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+          0 10px 30px -8px rgba(0, 0, 0, 0.55),
+          0 2px 6px rgba(0, 0, 0, 0.25);
+      }
+      .glass::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        padding: 1px;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.45),
+          rgba(255, 255, 255, 0.08) 40%,
+          rgba(255, 255, 255, 0.02) 60%,
+          rgba(255, 255, 255, 0.22)
+        );
+        -webkit-mask:
+          linear-gradient(#000 0 0) content-box,
+          linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+      }
+      .nav-dock {
+        position: fixed;
+        top: 14px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 50;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        max-width: calc(100vw - 32px);
+      }
+      .nav-tabs {
+        border-radius: 9999px;
+        display: flex;
+        align-items: center;
+        padding: 6px;
+        overflow: hidden;
+      }
+      .nav-tab {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        min-width: 64px;
+        height: 52px;
+        padding: 0 10px;
+        border-radius: 9999px;
+        color: rgb(156 163 175);
+        transition:
+          background 0.25s ease,
+          color 0.2s ease;
+      }
+      .nav-tab:hover,
+      .nav-tab.is-active {
+        color: #fff;
+      }
+      .nav-tab .lbl {
+        font-size: 10px;
+        line-height: 1;
+        white-space: nowrap;
+      }
+      .nav-tab.is-active {
+        background: rgba(255, 255, 255, 0.12);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+      }
+      .nav-tab.is-active i {
+        color: #a78bfa;
+      }
+      .nav-round {
+        width: 64px;
+        height: 64px;
+        border-radius: 9999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      @media (max-width: 640px) {
+        .nav-tab {
+          min-width: 0;
+          padding: 0 12px;
+        }
+        .nav-tab .lbl {
+          display: none;
+        }
+        .nav-round {
+          width: 56px;
+          height: 56px;
+        }
+      }
     </style>
   </head>
   <body class="bg-gray-950 text-gray-100 font-sans overflow-x-hidden">
     <!-- ===== NAVBAR ===== -->
-    <header
-      class="fixed top-0 w-full z-50 bg-gray-950/80 backdrop-blur-md border-b border-white/5"
-    >
-      <nav
-        class="max-w-6xl mx-auto px-4 flex items-center justify-between h-16"
-      >
-        <!-- Desktop nav links -->
-        <ul class="hidden lg:flex space-x-6 font-mono font-bold text-sm">
-          <li>
-            <a href="#" class="text-gray-400 hover:text-white transition-colors"
-              >Home</a
-            >
-          </li>
-          <li>
-            <a
-              href="#portfolio"
-              class="text-gray-400 hover:text-white transition-colors"
-              >Portfolio</a
-            >
-          </li>
-          <li>
-            <a
-              href="#skills"
-              class="text-gray-400 hover:text-white transition-colors"
-              >Skills</a
-            >
-          </li>
-          <li>
-            <a
-              href="#experience"
-              class="text-gray-400 hover:text-white transition-colors"
-              >Experience</a
-            >
-          </li>
-          <li>
-            <a
-              href="#education"
-              class="text-gray-400 hover:text-white transition-colors"
-              >Education</a
-            >
-          </li>
-          <li>
-            <a
-              href="#get-to-know-me"
-              class="text-gray-400 hover:text-white transition-colors"
-              >Get to Know Me</a
-            >
-          </li>
-        </ul>
-
-        <!-- Social icons (desktop) -->
-        <div class="hidden lg:flex space-x-4 ml-auto">
-          <a
-            href="https://www.linkedin.com/in/cristianlukecruz/"
-            target="_blank"
-            class="text-gray-400 hover:text-white transition-colors"
+    <header>
+      <div class="nav-dock">
+        <nav class="nav-tabs glass font-mono font-bold">
+          <a href="#" data-sec="hero" class="nav-tab"
+            ><i class="fa-solid fa-house"></i><span class="lbl">Home</span></a
           >
-            <i class="fa-brands fa-linkedin fa-lg"></i>
-          </a>
-          <a
-            href="https://github.com/ccristil"
-            target="_blank"
-            class="text-gray-400 hover:text-white transition-colors"
+          <a href="#portfolio" data-sec="portfolio" class="nav-tab"
+            ><i class="fa-solid fa-layer-group"></i
+            ><span class="lbl">Portfolio</span></a
           >
-            <i class="fa-brands fa-github fa-lg"></i>
-          </a>
+          <a href="#skills" data-sec="skills" class="nav-tab"
+            ><i class="fa-solid fa-code"></i><span class="lbl">Skills</span></a
+          >
+          <a href="#experience" data-sec="experience" class="nav-tab"
+            ><i class="fa-solid fa-briefcase"></i
+            ><span class="lbl">Experience</span></a
+          >
+          <a href="#education" data-sec="education" class="nav-tab"
+            ><i class="fa-solid fa-graduation-cap"></i
+            ><span class="lbl">Education</span></a
+          >
+          <a href="#get-to-know-me" data-sec="get-to-know-me" class="nav-tab"
+            ><i class="fa-solid fa-user"></i><span class="lbl">About</span></a
+          >
+        </nav>
+        <div class="relative group">
           <button
             onclick="openResumeModal()"
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-white/20 hover:border-white/40 text-gray-400 hover:text-white font-mono text-xs rounded-md transition-all duration-200 cursor-pointer"
+            class="nav-round glass text-white hover:text-purple-300 transition-colors"
+            aria-label="Download resume"
+            aria-describedby="nav-resume-tip"
           >
-            <i class="fa-solid fa-file-arrow-down"></i>
-            Resume
+            <i class="fa-solid fa-file-arrow-down fa-lg"></i>
           </button>
-        </div>
-
-        <!-- Hamburger (mobile) -->
-        <button
-          id="menu-toggle"
-          class="lg:hidden text-gray-400 hover:text-white transition-colors"
-        >
-          <i class="fa-solid fa-bars fa-lg"></i>
-        </button>
-
-        <!-- Resume button (mobile only) -->
-        <button
-          onclick="openResumeModal()"
-          class="flex lg:hidden items-center gap-1.5 px-3 py-1.5 border border-white/20 hover:border-white/40 text-gray-400 hover:text-white font-mono text-xs rounded-md transition-all duration-200 cursor-pointer"
-        >
-          <i class="fa-solid fa-file-arrow-down"></i>
-          Resume
-        </button>
-      </nav>
-
-      <!-- Mobile menu -->
-      <div
-        id="mobile-menu"
-        class="hidden lg:hidden bg-gray-950/95 backdrop-blur-md px-6 pb-4 space-y-3 font-mono font-bold text-sm border-b border-white/10"
-      >
-        <a
-          href="#"
-          class="block text-gray-400 hover:text-white transition-colors"
-          >Home</a
-        >
-        <a
-          href="#portfolio"
-          class="block text-gray-400 hover:text-white transition-colors"
-          >Portfolio</a
-        >
-        <a
-          href="#skills"
-          class="block text-gray-400 hover:text-white transition-colors"
-          >Skills</a
-        >
-        <a
-          href="#experience"
-          class="block text-gray-400 hover:text-white transition-colors"
-          >Experience</a
-        >
-        <a
-          href="#education"
-          class="block text-gray-400 hover:text-white transition-colors"
-          >Education</a
-        >
-        <a
-          href="#get-to-know-me"
-          class="block text-gray-400 hover:text-white transition-colors"
-          >Get to Know Me</a
-        >
-        <div class="flex space-x-4 pt-2">
-          <a
-            href="https://www.linkedin.com/in/cristianlukecruz/"
-            target="_blank"
-            class="text-gray-400 hover:text-white transition-colors"
+          <span
+            id="nav-resume-tip"
+            role="tooltip"
+            class="absolute top-full right-0 mt-2 whitespace-nowrap bg-gray-900 border border-purple-500 text-gray-200 text-xs rounded-lg px-3 py-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 pointer-events-none z-10"
           >
-            <i class="fa-brands fa-linkedin fa-lg"></i>
-          </a>
-          <a
-            href="https://github.com/ccristil"
-            target="_blank"
-            class="text-gray-400 hover:text-white transition-colors"
-          >
-            <i class="fa-brands fa-github fa-lg"></i>
-          </a>
+            Download my resume
+          </span>
         </div>
       </div>
     </header>
@@ -2436,17 +2443,28 @@
 
     <!-- ===== JAVASCRIPT ===== -->
     <script>
-      // 1. Mobile menu toggle
-      document.getElementById("menu-toggle").addEventListener("click", () => {
-        document.getElementById("mobile-menu").classList.toggle("hidden");
-      });
-
-      // Close mobile menu when a link is clicked
-      document.querySelectorAll("#mobile-menu a").forEach((link) => {
-        link.addEventListener("click", () => {
-          document.getElementById("mobile-menu").classList.add("hidden");
+      // 1. Nav: highlight the tab for the section currently in view
+      const navSections = [
+        "hero",
+        "portfolio",
+        "skills",
+        "experience",
+        "education",
+        "get-to-know-me",
+      ];
+      const updateActiveTab = () => {
+        const line = window.innerHeight * 0.35;
+        let current = "hero";
+        navSections.forEach((id) => {
+          const el = document.getElementById(id);
+          if (el && el.getBoundingClientRect().top <= line) current = id;
         });
-      });
+        document.querySelectorAll(".nav-tab").forEach((tab) => {
+          tab.classList.toggle("is-active", tab.dataset.sec === current);
+        });
+      };
+      window.addEventListener("scroll", updateActiveTab, { passive: true });
+      updateActiveTab();
 
       // 2. Card 3D tilt effect
       document.querySelectorAll(".tilt-card").forEach((card) => {
