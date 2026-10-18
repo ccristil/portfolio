@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>Particle Template</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=JetBrains+Mono:wght@400&display=swap"
+      rel="stylesheet"
+    />
+    <script type="importmap">
+      { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+    </script>
+    <style>
+      :root {
+        --bg: #0b0507;
+        --text: #f5e9d6;
+        --muted: #b9a58a;
+        --accent: #ffdc96;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; background: var(--bg); color: var(--text); font-family: "Inter", sans-serif; }
+      #webgl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+      /* Soft vignette so the cloud sits in a pool of light */
+      .vignette {
+        position: fixed; inset: 0; pointer-events: none;
+        background: radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.65) 100%);
+      }
+      main { position: relative; z-index: 1; pointer-events: none; }
+      section {
+        height: 100vh; display: flex; align-items: flex-end;
+        padding: 0 clamp(16px, 5vw, 64px) clamp(32px, 8vh, 72px);
+      }
+      .card { max-width: 340px; }
+      .eyebrow {
+        font-family: "JetBrains Mono", monospace; font-size: 12px;
+        letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent);
+      }
+      h2 { font-size: clamp(28px, 4vw, 44px); margin: 8px 0 10px; letter-spacing: -0.02em; }
+      p { margin: 0; color: var(--muted); line-height: 1.55; font-size: 15px; }
+      .scroll-hint {
+        position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+        font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 0.2em;
+        text-transform: uppercase; color: var(--muted); transition: opacity 0.4s;
+      }
+      .hud {
+        position: fixed; right: 16px; top: 16px; z-index: 2;
+        font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--muted);
+        background: rgba(0, 0, 0, 0.35); padding: 6px 10px; border-radius: 6px;
+      }
+      @media (max-width: 640px) {
+        section { align-items: flex-end; }
+        .scroll-hint { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="webgl" aria-hidden="true"></canvas>
+    <div class="vignette"></div>
+    <div class="hud" id="hud">stage 0.00</div>
+
+    <!-- One section per shape. Section i is where shape i rests. -->
+    <main>
+      <section>
+        <div class="card">
+          <div class="eyebrow">I · Image → particles</div>
+          <h2>The Tiger</h2>
+          <p>Sampled from the 🐯 emoji. Every bright pixel becomes a dot; dark stripes become gaps.</p>
+        </div>
+      </section>
+      <section>
+        <div class="card">
+          <div class="eyebrow">II · Math → particles</div>
+          <h2>The Ring</h2>
+          <p>A torus built from a formula. Real depth, so the sway shows it turning.</p>
+        </div>
+      </section>
+      <section>
+        <div class="card">
+          <div class="eyebrow">III · Data → particles</div>
+          <h2>The Chart</h2>
+          <p>Seven bars from an array of numbers. Swap in real data and the cloud redraws it.</p>
+        </div>
+      </section>
+      <section>
+        <div class="card">
+          <div class="eyebrow">IV · Text → particles</div>
+          <h2>The Name</h2>
+          <p>Text drawn on a hidden canvas, then sampled the same way as the tiger.</p>
+        </div>
+      </section>
+    </main>
+    <div class="scroll-hint" id="scroll-hint">Scroll</div>
+
+    <script type="module">
+      import { createParticleField } from "./particles.js";
+      import { fromEmoji, fromText, fromFunction } from "./shapes.js";
+
+      const isSmall = matchMedia("(max-width: 640px)").matches;
+      const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const COUNT = isSmall ? 18000 : 40000;
+
+      // --- Shapes ------------------------------------------------------------
+      // A torus tilted toward the camera, lit from the upper left.
+      const ring = fromFunction(COUNT, () => {
+        const u = Math.random() * Math.PI * 2;
+        const v = Math.random() * Math.PI * 2;
+        const R = 1, r = 0.3 + (Math.random() - 0.5) * 0.04;
+        const nx = Math.cos(u) * Math.cos(v), ny = Math.sin(u) * Math.cos(v), nz = Math.sin(v);
+        const x = (R + r * Math.cos(v)) * Math.cos(u);
+        const y0 = (R + r * Math.cos(v)) * Math.sin(u);
+        const z0 = r * Math.sin(v);
+        const tilt = 1.05;
+        const y = y0 * Math.cos(tilt) - z0 * Math.sin(tilt);
+        const z = y0 * Math.sin(tilt) + z0 * Math.cos(tilt);
+        const light = Math.max(0, -0.5 * nx + 0.6 * (ny * Math.cos(tilt) - nz * Math.sin(tilt)) + 0.6 * (ny * Math.sin(tilt) + nz * Math.cos(tilt)));
+        return [x, y, z, 0.35 + light * 0.65];
+      });
+      ring.fit = 0.6; // its near edge looms larger in perspective
+
+      // A bar chart. Change `data` to anything.
+      const data = [0.32, 0.5, 0.44, 0.68, 0.6, 0.84, 1];
+      const chart = fromFunction(COUNT, (i) => {
+        const gap = 0.35, barW = 1, depth = 0.6;
+        // ~6% of particles draw the baseline axis
+        if (i % 16 === 0) {
+          const span = data.length * (barW + gap);
+          return [Math.random() * span - gap / 2, -0.04, (Math.random() - 0.5) * 0.05, 0.6];
+        }
+        const b = i % data.length;
+        const h = data[b] * 5;
+        const x = b * (barW + gap) + Math.random() * barW;
+        const y = Math.random() * h;
+        const z = (Math.random() - 0.5) * depth;
+        return [x, y, z, 0.3 + 0.7 * (y / 5)];
+      });
+      chart.fit = 0.75;
+
+      await document.fonts.load('700 160px "Inter"');
+      const tiger = fromEmoji("🐯", COUNT) ?? ring;
+      const name = fromText("CRISTIAN CRUZ", COUNT);
+
+      // --- Timeline: edit this list to change the story -----------------------
+      const shapes = [tiger, ring, chart, name];
+
+      const field = createParticleField({
+        canvas: document.getElementById("webgl"),
+        count: COUNT,
+        shapes,
+        reducedMotion,
+      });
+
+      // --- Scroll → progress -------------------------------------------------
+      // ?stage=1.5 freezes the timeline for screenshots/tuning; ?birth=0 skips the intro.
+      const params = new URLSearchParams(location.search);
+      const frozen = params.has("stage") ? parseFloat(params.get("stage")) : null;
+      const hud = document.getElementById("hud");
+      const hint = document.getElementById("scroll-hint");
+
+      const target = () => (frozen ?? scrollY / innerHeight);
+      let current = target();
+      (function loop() {
+        current += (target() - current) * (reducedMotion ? 1 : 0.08);
+        field.setProgress(current);
+        hud.textContent = `stage ${current.toFixed(2)}`;
+        hint.style.opacity = scrollY > 40 ? "0" : "1";
+        requestAnimationFrame(loop);
+      })();
+
+      if (params.get("birth") === "0") field.uniforms.uBirth.value = 1;
+      else field.birth();
+    </script>
+  </body>
+</html>
