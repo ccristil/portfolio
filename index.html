@@ -28,6 +28,24 @@
       })();
     </script>
     <title>Cristian Cruz | Portfolio</title>
+    <script type="importmap">
+      { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js" } }
+    </script>
+    <!-- Particle story: decide before first paint whether the canvas replaces
+         the hero photo. story.js removes the class again if setup fails. -->
+    <script>
+      (function () {
+        try {
+          var probe = document.createElement("canvas");
+          var gl = probe.getContext("webgl2") || probe.getContext("webgl");
+          if (gl) {
+            document.documentElement.classList.add("has-particles");
+            var ext = gl.getExtension("WEBGL_lose_context");
+            if (ext) ext.loseContext();
+          }
+        } catch (e) {}
+      })();
+    </script>
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -346,47 +364,6 @@
       .hero-btn {
         animation: heroFadeUp 0.5s ease both 0.55s;
       }
-      /* Rotating hero word — typewriter.
-         The line is centred on a fixed 32ch box and the word slot is zero-width,
-         so the word grows to the right from a fixed anchor: the space after "are"
-         never changes and nothing before it ever moves.
-         Applied by JS only, so the no-JS fallback sentence is not clipped. */
-      .hero-word {
-        display: inline-block;
-      }
-      .hero-line.is-live {
-        display: flex;
-        justify-content: center;
-      }
-      .hero-line.is-live .hero-line-inner {
-        width: 32ch;
-        text-align: left;
-        white-space: nowrap;
-      }
-      .hero-line.is-live .hero-word {
-        width: 0;
-        white-space: pre;
-      }
-      .hero-caret {
-        display: inline-block;
-        margin-left: 0.05em;
-        animation: heroCaret 1s step-end infinite;
-      }
-      @keyframes heroCaret {
-        0%,
-        49% {
-          opacity: 1;
-        }
-        50%,
-        100% {
-          opacity: 0;
-        }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .hero-caret {
-          animation: none;
-        }
-      }
       /* ===== Load intro (cursor → white bar → name) =====
          Everything here is scoped to html.intro, which the gate script in
          <head> adds on the first load of a session. The timeline lives in the
@@ -586,9 +563,63 @@
           height: 56px;
         }
       }
+
+      /* ===== Particle story ===== */
+      #particles {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+        display: none;
+      }
+      html.has-particles #particles {
+        display: block;
+      }
+      html.has-particles #hero .hero-photo {
+        display: none;
+      }
+      #hero,
+      main,
+      footer {
+        position: relative;
+        z-index: 1;
+      }
+      .interlude {
+        min-height: 100vh;
+        min-height: 100svh;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding-bottom: 14vh;
+        text-align: center;
+      }
+      .interlude__caption {
+        max-width: 22ch;
+        font-size: clamp(1.75rem, 4vw, 3rem);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1.15;
+        color: #fff;
+        text-shadow: 0 2px 24px rgba(3, 7, 18, 0.9);
+      }
+      .interlude--properly .interlude__caption {
+        font-size: clamp(2.5rem, 7vw, 5rem);
+        font-style: italic;
+      }
+      /* The closing stop is empty space for the particle name; without
+         particles it would just be a blank screen. */
+      .interlude--closing {
+        display: none;
+      }
+      html.has-particles .interlude--closing {
+        display: block;
+      }
     </style>
   </head>
   <body class="bg-gray-950 text-gray-100 font-sans overflow-x-hidden">
+    <canvas id="particles" aria-hidden="true"></canvas>
     <!-- ===== NAVBAR ===== -->
     <header>
       <div class="nav-dock">
@@ -638,16 +669,16 @@
     <!-- ===== HERO BANNER ===== -->
     <section
       id="hero"
-      class="relative w-full h-[600px] overflow-hidden flex items-center justify-center"
+      class="relative w-full h-screen h-[100svh] min-h-[600px] overflow-hidden flex items-center justify-center"
     >
       <img
         src="assets/mountains_bg.jpg"
         alt="Mountain background"
-        class="absolute inset-0 w-full h-full object-cover"
+        class="hero-photo absolute inset-0 w-full h-full object-cover"
       />
-      <div class="absolute inset-0 bg-black/40"></div>
+      <div class="hero-photo absolute inset-0 bg-black/40"></div>
       <div
-        class="absolute inset-0 bg-gradient-to-t from-gray-950 via-transparent to-transparent"
+        class="hero-photo absolute inset-0 bg-gradient-to-t from-gray-950 via-transparent to-transparent"
       ></div>
       <div class="hero-text relative z-10 text-center px-4">
         <h1
@@ -658,14 +689,8 @@
         <p
           class="hero-tagline text-sm md:text-base font-mono text-gray-300 mt-3"
         >
-          <span class="sr-only"
-            >I build things that are beautiful and useful</span
-          >
-          <span aria-hidden="true" class="hero-line"
-            ><span class="hero-line-inner"
-              >I build things that are
-              <b id="hero-word" class="hero-word">beautiful and useful</b></span
-            ></span
+          <span class="hero-line"
+            ><span class="hero-line-inner">Product Engineer</span></span
           >
         </p>
         <div class="hero-btn mt-6">
@@ -682,6 +707,10 @@
 
     <!-- ===== MAIN CONTENT ===== -->
     <main class="max-w-6xl mx-auto px-4">
+      <section id="interlude-need" class="interlude">
+        <p class="interlude__caption">I find out what people actually need,</p>
+      </section>
+
       <!-- ===== PORTFOLIO ===== -->
       <section id="portfolio" class="py-20">
         <h2 class="section-heading text-3xl font-bold mb-10">Portfolio</h2>
@@ -1043,6 +1072,10 @@
         </div>
       </section>
 
+      <section id="interlude-decide" class="interlude">
+        <p class="interlude__caption">decide what's worth building,</p>
+      </section>
+
       <!-- ===== SKILLS ===== -->
       <section id="skills" class="py-20">
         <h2 class="section-heading text-3xl font-bold mb-10">Skills</h2>
@@ -1166,6 +1199,10 @@
             </div>
           </div>
         </div>
+      </section>
+
+      <section id="interlude-build" class="interlude">
+        <p class="interlude__caption">and then I build it.</p>
       </section>
 
       <!-- ===== EXPERIENCE ===== -->
@@ -1318,6 +1355,10 @@
         </div>
       </section>
 
+      <section id="interlude-properly" class="interlude interlude--properly">
+        <p class="interlude__caption">Properly.</p>
+      </section>
+
       <!-- ===== GET TO KNOW ME ===== -->
       <section id="get-to-know-me" class="py-20">
         <h2 class="section-heading text-3xl font-bold mb-4">Get to Know Me</h2>
@@ -1393,6 +1434,7 @@
           ></div>
         </div>
       </section>
+      <div id="interlude-closing" class="interlude interlude--closing" aria-hidden="true"></div>
     </main>
 
     <!-- ===== FOOTER ===== -->
@@ -2636,77 +2678,6 @@
           closeResumeModal();
       });
 
-      /* Hero tagline word rotator — typewriter */
-      (() => {
-        const el = document.getElementById("hero-word");
-        if (!el) return;
-        // Reduced motion: leave the static fallback sentence untouched.
-        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches)
-          return;
-
-        const words = [
-          "beautiful",
-          "useful",
-          "clear",
-          "delightful",
-          "interesting",
-          "reliable",
-          "alive",
-        ];
-        const DELETE_MS = 38,
-          TYPE_MS = 62,
-          PERIOD_MS = 2500;
-
-        el.closest(".hero-line").classList.add("is-live");
-        el.textContent = "";
-        const text = document.createElement("span");
-        const caret = document.createElement("span");
-        caret.className = "hero-caret";
-        caret.textContent = "\u258f";
-        el.append(text, caret);
-
-        let i = 0;
-        text.textContent = words[0];
-
-        const startCycling = () => setInterval(() => {
-          const next = (i + 1) % words.length;
-          const from = words[i],
-            to = words[next];
-          // Only backspace past the letters the two words don't share.
-          let shared = 0;
-          while (
-            shared < from.length &&
-            shared < to.length &&
-            from[shared] === to[shared]
-          )
-            shared++;
-
-          let c = from.length;
-          const erase = () => {
-            if (c > shared) {
-              text.textContent = from.slice(0, --c);
-              setTimeout(erase, DELETE_MS);
-            } else {
-              let t = shared;
-              const type = () => {
-                if (t < to.length) {
-                  text.textContent = to.slice(0, ++t);
-                  setTimeout(type, TYPE_MS);
-                }
-              };
-              setTimeout(type, 90);
-            }
-          };
-          erase();
-          i = next;
-        }, PERIOD_MS);
-
-        // Hold on the first word until the load intro has finished.
-        if (document.documentElement.classList.contains("intro"))
-          document.addEventListener("intro:done", startCycling, { once: true });
-        else startCycling();
-      })();
-
       /* Load intro — cursor blinks, stretches into a white bar, wipes to
          reveal the name and tagline in place, then the rest of the page fades in.
          Only runs when the <head> gate added .intro to <html>. */
@@ -2793,5 +2764,13 @@
     </script>
 
     <script src="index.js" defer></script>
+    <script type="module">
+      if (document.documentElement.classList.contains("has-particles")) {
+        import("./assets/particles/story.js").catch((err) => {
+          console.warn("Particle story disabled:", err);
+          document.documentElement.classList.remove("has-particles");
+        });
+      }
+    </script>
   </body>
 </html>
