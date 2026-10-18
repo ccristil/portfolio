@@ -1,6 +1,6 @@
 # Cristian Cruz
 
-> Data informs decisions. People make them. I love working with both. Portfolio spanning data engineering, ML pipelines, consulting tooling, and applied research.
+> I find out what people actually need, decide what's worth building, and then I build it. Properly. Product Engineer whose work spans web development, data engineering, consulting tooling, and applied research.
 
 ## Skills
 

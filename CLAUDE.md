@@ -48,12 +48,13 @@ This is a personal portfolio website. Claude should make targeted, minimal chang
 
 ## Positioning & Voice
 
-- **Tagline**: "Data informs decisions. People make them. I love working with both." — this is the professional positioning line in the hero banner. Do not revert to "data enthusiast".
-- **Core message**: Cristian bridges data and people. Project descriptions should reinforce this angle — not just technical skills, but impact on stakeholders and decisions.
+- **Positioning line**: "I find out what people actually need, decide what's worth building, and then I build it. Properly." — told across the four particle-story interludes on the homepage. The hero tagline is "Product Engineer". Do not revert to "Data informs decisions…" or "data enthusiast".
+- **Core message**: Cristian is a Product Engineer: he decides what gets built and then builds it. Every role (web developer ×2, technical consultant, product engineer) combined both. Data skills support the decisions; they are not the headline. Project descriptions should show the need he found, the call he made, and what he shipped.
 - When writing or editing copy, match this tone: confident, specific, human. Avoid generic phrases like "leveraged" or "utilized".
 
 ## File Structure Context
 - `/assets` - Static assets (images, `site.css`)
+- `/assets/particles` - Particle story engine (Three.js via import map); the story's shapes and scroll stops live in `story-shapes.js` and `story.js`
 - `/blog` - Blog feature (beta, hidden)
 - `/dev` - Development/staging versions of pages
 - `index.html` - Main production portfolio page
