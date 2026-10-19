@@ -28,6 +28,7 @@ SHAPES.name.loose = 0.4;
 const NAMES = Object.keys(SHAPES);
 
 // The story, top to bottom: [element, which part meets mid-screen, shape].
+// The part is "start", "center", "end" or a 0–1 fraction of the element.
 // Two stops in a row with the same shape hold it across that stretch.
 // Stops must be in page order.
 const STOPS = [
@@ -35,7 +36,10 @@ const STOPS = [
   ["#interlude-need", "center", "people"],
   ["#portfolio", "start", "dust"],
   ["#portfolio", "end", "dust"],
-  ["#interlude-decide", "center", "decision"],
+  // The funnel forms 28% of the way in, then you fly down it until 72%
+  // (see travelAt). The morphs either side match the other interludes'.
+  ["#interlude-decide", 0.28, "decision"],
+  ["#interlude-decide", 0.72, "decision"],
   ["#skills", "start", "dust"],
   ["#skills", "end", "dust"],
   ["#interlude-build", "center", "app"],
@@ -52,7 +56,8 @@ const STOPS = [
 for (const [sel, at, shape] of STOPS) {
   if (!document.querySelector(sel)) throw new Error(`story stop: no element matches "${sel}"`);
   if (!(shape in SHAPES)) throw new Error(`story stop: unknown shape "${shape}"`);
-  if (!["start", "center", "end"].includes(at)) throw new Error(`story stop: bad position "${at}"`);
+  const fraction = typeof at === "number" && at >= 0 && at <= 1;
+  if (!fraction && !["start", "center", "end"].includes(at)) throw new Error(`story stop: bad position "${at}"`);
 }
 
 const canvas = document.getElementById("particles");
@@ -72,11 +77,24 @@ try {
 
 try {
   let stops = [];
+  let flySpan = null; // [startY, endY] of the scroll span you fly through the funnel
   function measure() {
     stops = STOPS.map(([sel, at, shape]) => ({
       y: stopY(document.querySelector(sel).getBoundingClientRect(), scrollY, innerHeight, at),
       shape: NAMES.indexOf(shape),
     }));
+    // The first fly-through shape's two neighbouring stops bound its flight.
+    const k = stops.findIndex(
+      (s, i) => i > 0 && s.shape === stops[i - 1].shape && SHAPES[NAMES[s.shape]].flyTo != null
+    );
+    flySpan = k > 0 ? [stops[k - 1].y, stops[k].y] : null;
+  }
+  // 0 before the flight and 1 after it, so the funnel morphs in at its mouth
+  // and leaves from its tip. Reduced motion skips the flight: a still view down it.
+  function travelAt(y) {
+    if (!flySpan) return 0;
+    if (reducedMotion) return 0.1;
+    return Math.min(1, Math.max(0, (y - flySpan[0]) / (flySpan[1] - flySpan[0] || 1)));
   }
   measure();
   if (stops.some((s, i) => i > 0 && s.y < stops[i - 1].y)) {
@@ -109,7 +127,7 @@ try {
     if (stopped) return;
     y += (scrollY - y) * (reducedMotion ? 1 : 0.025);
     const { from, to, t } = stateAt(stops, y);
-    field.setState(from, to, t);
+    field.setState(from, to, t, travelAt(y));
     requestAnimationFrame(loop);
   })();
 

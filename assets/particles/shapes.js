@@ -10,7 +10,8 @@
 // `.fill` themselves when that's wrong.
 // Optional settings the engine reads (set them on the returned object):
 //   fit (number or "cover"), opacity (0–1), spin (radians/second),
-//   loose (how far particles wander at rest; default 1).
+//   loose (how far particles wander at rest; default 1),
+//   flyTo (shape-space z the camera flies to; see particles.js).
 
 // Centers a shape on the origin and scales it so max(width, height) = 1.
 function normalize(positions) {

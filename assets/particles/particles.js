@@ -10,6 +10,8 @@
 //   opacity  0–1 (default 1)
 //   spin     radians per second around the vertical axis (default 0)
 //   loose    how far its particles wander at rest (default 1; 0 = still)
+//   flyTo    shape-space z the camera flies to; makes it a fly-through shape
+//            that setState's `travel` (0–1) slides toward the camera
 //
 // Throws if WebGL is unavailable. Callers should catch and fall back.
 
@@ -34,6 +36,10 @@ const vertexShader = /* glsl */ `
   uniform float uLoose;
   uniform float uLooseA;
   uniform float uLooseB;
+  uniform float uFlyA;
+  uniform float uFlyB;
+  uniform float uCalmA;
+  uniform float uCalmB;
   uniform float uCrossfade;
   uniform float uScatter;
   uniform float uBirth;
@@ -124,7 +130,13 @@ const vertexShader = /* glsl */ `
 
     vec3 a = spinY(aPosA, uTime * uSpinA * uAmbient) * uScaleA;
     vec3 b = spinY(aPosB, uTime * uSpinB * uAmbient) * uScaleB;
+    // Fly-through shapes slide toward the camera as you scroll through them.
+    a.z += uFlyA;
+    b.z += uFlyB;
     vec3 p = mix(a, b, tp);
+    // Fly-through shapes are long along z, so they skip the sway and the
+    // cursor push; the sway would swing their far end across the screen.
+    float calm = mix(uCalmA, uCalmB, tp);
 
     // Mid-flight, particles bloom outward and fall back in.
     vec3 dir = normalize(aRand.xyz - 0.5 + 0.0001);
@@ -136,7 +148,7 @@ const vertexShader = /* glsl */ `
     float wander = 0.035 * uLoose * mix(uLooseA, uLooseB, tp) * (0.5 + aRand.y) * stray;
     p += uAmbient * wander * drift(p * 1.2 + vec3(0.0, 0.0, uTime * 0.15) + aRand.xyz * 0.35);
     // A slow sway that shows off the depth.
-    float ang = sin(uTime * 0.25) * 0.22 * uAmbient;
+    float ang = sin(uTime * 0.25) * 0.22 * uAmbient * (1.0 - calm);
     float c = cos(ang), s = sin(ang);
     p.xz = mat2(c, s, -s, c) * p.xz;
 
@@ -147,12 +159,16 @@ const vertexShader = /* glsl */ `
 
     // Cursor pushes particles aside.
     vec2 d = p.xy - uMouse.xy;
-    float push = uMouseStrength * (1.0 - smoothstep(0.0, uMouseRadius, length(d)));
+    float push = uMouseStrength * (1.0 - calm) * (1.0 - smoothstep(0.0, uMouseRadius, length(d)));
     p.xy += normalize(d + 0.0001) * push * 0.35;
     p.z += push * 0.3;
 
     vec4 mv = modelViewMatrix * vec4(p, 1.0);
     gl_Position = projectionMatrix * mv;
+    // Points fade out as they near the camera and are dropped (sent past the
+    // far plane) once faded; otherwise the size falloff below would blow them
+    // up into huge blobs.
+    float nearFade = smoothstep(0.6, 1.8, -mv.z);
 
     vLum = mix(aLumA, aLumB, tp);
     vSpark = step(0.985, aRand.y) * (0.5 + 0.5 * sin(uTime * 3.0 * uAmbient + aRand.x * 40.0));
@@ -160,8 +176,12 @@ const vertexShader = /* glsl */ `
     float dip = mix(1.0, abs(1.0 - 2.0 * uMorph), uCrossfade);
     // Exposure lifts toward 1 mid-flight, when the cloud is spread out.
     vExposure = mix(mix(uExposureA, uExposureB, tp), 1.0, flight * 0.6)
-      * mix(uOpacityA, uOpacityB, tp) * dip;
+      * mix(uOpacityA, uOpacityB, tp) * dip * nearFade;
     gl_PointSize = uSize * uPixelRatio * (0.55 + vLum * 0.8 + vSpark * 1.6) * (6.0 / -mv.z);
+    if (nearFade <= 0.0) {
+      gl_PointSize = 0.0;
+      gl_Position = vec4(0.0, 0.0, 2.0, 1.0);
+    }
   }
 `;
 
@@ -234,6 +254,10 @@ export function createParticleField({
     uLoose: { value: looseness },
     uLooseA: { value: 1 },
     uLooseB: { value: 1 },
+    uFlyA: { value: 0 },
+    uFlyB: { value: 0 },
+    uCalmA: { value: 0 },
+    uCalmB: { value: 0 },
     uCrossfade: { value: reducedMotion ? 1 : 0 },
     uScatter: { value: reducedMotion ? 0 : 0.55 },
     uBirth: { value: reducedMotion ? 1 : 0 },
@@ -299,9 +323,19 @@ export function createParticleField({
     loaded = `${from}>${to}`;
   }
 
+  // A fly-through shape's flight ends with its `flyTo` depth this far in
+  // front of the camera.
+  const FLY_STOP = 3;
+  function flyOffset(i, travel) {
+    const { flyTo } = shapes[i];
+    if (flyTo == null) return 0;
+    return (camera.position.z - FLY_STOP - flyTo * shapeScales[i]) * travel;
+  }
+
   // Show the morph from shape `from` to shape `to`, t in 0…1.
   // Each shape is held still for the first and last 8% of t.
-  function setState(from, to, t) {
+  // travel (0…1) is how far through any fly-through shape the camera has flown.
+  function setState(from, to, t, travel = 0) {
     if (loaded !== `${from}>${to}`) load(from, to);
     uniforms.uMorph.value = from === to ? 0 : smoothstep(0.08, 0.92, t);
     uniforms.uScaleA.value = shapeScales[from];
@@ -314,6 +348,10 @@ export function createParticleField({
     uniforms.uSpinB.value = shapes[to].spin ?? 0;
     uniforms.uLooseA.value = shapes[from].loose ?? 1;
     uniforms.uLooseB.value = shapes[to].loose ?? 1;
+    uniforms.uFlyA.value = flyOffset(from, travel);
+    uniforms.uFlyB.value = flyOffset(to, travel);
+    uniforms.uCalmA.value = shapes[from].flyTo == null ? 0 : 1;
+    uniforms.uCalmB.value = shapes[to].flyTo == null ? 0 : 1;
   }
 
   // Convenience for linear stories: f runs 0 … shapes.length - 1.

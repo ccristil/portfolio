@@ -9,8 +9,13 @@
 
 // The scrollY at which part of an element sits in the middle of the viewport.
 // rect is a getBoundingClientRect() taken at the current scrollY.
+// at is "start", "center", "end", or a 0–1 fraction of the element's height.
 export function stopY(rect, scrollY, viewportH, at = "center") {
-  const offset = at === "start" ? 0 : at === "end" ? rect.height : rect.height / 2;
+  const offset =
+    typeof at === "number" ? rect.height * at
+    : at === "start" ? 0
+    : at === "end" ? rect.height
+    : rect.height / 2;
   return rect.top + scrollY + offset - viewportH / 2;
 }
 

@@ -644,6 +644,12 @@
         font-size: clamp(2.5rem, 7vw, 5rem);
         font-style: italic;
       }
+      /* The decide interlude is a funnel you fly down, so it needs a longer
+         stretch of scroll. Without particles it stays like the others. */
+      html.has-particles .interlude--decide {
+        min-height: 320vh;
+        min-height: 320svh;
+      }
       /* The closing stop is empty space for the particle name; without
          particles it would just be a blank screen. */
       .interlude--closing {
@@ -1200,7 +1206,7 @@
         </div>
       </section>
 
-      <section id="interlude-decide" class="interlude">
+      <section id="interlude-decide" class="interlude interlude--decide">
         <p class="interlude__caption">decide what's worth building,</p>
       </section>
 

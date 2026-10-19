@@ -42,19 +42,58 @@ export function dust(count) {
   return shape;
 }
 
-// "decide what's worth building": a wide, dim field of options, with one in
-// seven points gathered into a single bright choice.
+// "decide what's worth building": a funnel you fly down. Dim options crowd
+// its wide mouth and thin out with depth; the walls narrow to one bright
+// choice at the tip. It's long along z, and story.js slides it toward the
+// camera as you scroll (see `flyTo` in particles.js), so you travel through it.
+const FUNNEL_LENGTH = 6; // the mouth's radius is 1
+const FUNNEL_TIP = 0.08; // radius at the tip
+const FUNNEL_RINGS = 14;
+const FUNNEL_ARMS = 5; // spiral arms winding down the walls
+const FUNNEL_TURNS = 3; // turns each arm makes from mouth to tip
+const funnelRadius = (u) => FUNNEL_TIP + (1 - FUNNEL_TIP) * (1 - u) ** 1.5; // u: 0 mouth … 1 tip
+
 export function decision(count) {
-  const focus = [0.35, 0.1];
   const shape = fromFunction(count, (i) => {
-    if (i % 7 === 0) {
-      const r = 0.04 * Math.hypot(gauss(), gauss());
-      const a = Math.random() * Math.PI * 2;
-      return [focus[0] + r * Math.cos(a), focus[1] + r * Math.sin(a), gauss() * 0.02, 0.85 + Math.random() * 0.15];
+    const kind = i % 7;
+    const a = Math.random() * Math.PI * 2;
+    if (kind === 0) {
+      // The choice: a tight, bright cluster at the tip.
+      const r = 0.05 * Math.hypot(gauss(), gauss());
+      return [r * Math.cos(a), r * Math.sin(a), -FUNNEL_LENGTH + gauss() * 0.05, 0.85 + Math.random() * 0.15];
     }
-    return [gauss() * 0.55, gauss() * 0.35, gauss() * 0.15, 0.12 + Math.random() * 0.3];
+    if (kind <= 2) {
+      // Options: dim points inside, crowded at the mouth, thinning with depth.
+      const u = Math.random() ** 2.5;
+      const r = funnelRadius(u) * 0.85 * Math.sqrt(Math.random());
+      return [r * Math.cos(a), r * Math.sin(a), -u * FUNNEL_LENGTH, 0.1 + Math.random() * 0.25];
+    }
+    // Walls. Some gather into ring bands and some into spiral arms; as you fly
+    // the rings stream past and the arms seem to turn, like a vortex.
+    const pick = Math.random();
+    if (pick < 0.45) {
+      const u = Math.random();
+      const arm = Math.floor(Math.random() * FUNNEL_ARMS);
+      const t = (arm / FUNNEL_ARMS + u * FUNNEL_TURNS) * Math.PI * 2 + gauss() * 0.02;
+      const r = funnelRadius(u);
+      const lum = 0.55 + Math.random() * 0.25 + 0.2 * u;
+      return [r * Math.cos(t), r * Math.sin(t), -u * FUNNEL_LENGTH, Math.min(1, lum)];
+    }
+    const ring = pick < 0.75;
+    const u = ring
+      ? (Math.floor(Math.random() * FUNNEL_RINGS) + 0.5) / FUNNEL_RINGS + gauss() * 0.003
+      : Math.random();
+    const r = funnelRadius(u);
+    const lum = (ring ? 0.6 : 0.15) + Math.random() * 0.25 + 0.2 * u;
+    return [r * Math.cos(a), r * Math.sin(a), -u * FUNNEL_LENGTH, Math.min(1, lum)];
   });
-  shape.fit = 0.85;
+  // Fly to where the tip cluster (every 7th point) landed after normalize().
+  let tipZ = 0;
+  for (let i = 0; i < count; i += 7) tipZ += shape.positions[i * 3 + 2];
+  shape.flyTo = tipZ / Math.ceil(count / 7);
+  shape.fit = "cover";
+  shape.loose = 0.6;
+  shape.opacity = 0.8;
   return shape;
 }
 
