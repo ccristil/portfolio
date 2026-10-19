@@ -660,6 +660,67 @@
       html.has-particles .interlude--closing {
         display: block;
       }
+      /* The two marks are particles; these links are the hit areas over them.
+         GitHub fills the left 40% of the shape and LinkedIn the right 40%
+         (see socials() in story-shapes.js). story.js sets the size. */
+      .closing-links {
+        display: none;
+      }
+      html.has-particles .closing-links {
+        display: block;
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 2;
+        visibility: hidden;
+        opacity: 0;
+        transition: opacity 0.5s ease, visibility 0s linear 0.5s;
+      }
+      html.has-particles .closing-links.is-live {
+        visibility: visible;
+        opacity: 1;
+        transition-delay: 0s;
+      }
+      .closing-links__mark {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 40%;
+        border-radius: 12%;
+        transition: box-shadow 0.3s ease;
+      }
+      .closing-links__mark--github {
+        left: 0;
+      }
+      .closing-links__mark--linkedin {
+        right: 0;
+      }
+      .closing-links__mark:hover,
+      .closing-links__mark:focus-visible {
+        box-shadow: 0 0 90px rgba(167, 139, 250, 0.35);
+        outline: none;
+      }
+      .closing-links__mark:focus-visible {
+        outline: 2px solid #d8b4fe;
+        outline-offset: 6px;
+      }
+      .closing-links__mark span {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        margin-top: 1.25rem;
+        text-align: center;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.8rem;
+        color: #9ca3af;
+        transition: color 0.3s ease;
+      }
+      .closing-links__mark:hover span,
+      .closing-links__mark:focus-visible span {
+        color: #fff;
+      }
 
       /* ===== Sentence dock (assets/sentence-dock.js) =====
          As each interlude caption scrolls away, its words fly into the dock;
@@ -1573,6 +1634,24 @@
         </div>
       </section>
       <div id="interlude-closing" class="interlude interlude--closing" aria-hidden="true"></div>
+      <!-- Links over the GitHub and LinkedIn particle marks (assets/particles/story.js).
+           Hidden until the marks have formed; hidden for good without particles. -->
+      <nav id="closing-links" class="closing-links" aria-label="Find me online">
+        <a
+          href="https://github.com/ccristil"
+          target="_blank"
+          rel="noopener"
+          class="closing-links__mark closing-links__mark--github"
+          ><span>GitHub</span></a
+        >
+        <a
+          href="https://linkedin.com/in/cristianlukecruz"
+          target="_blank"
+          rel="noopener"
+          class="closing-links__mark closing-links__mark--linkedin"
+          ><span>LinkedIn</span></a
+        >
+      </nav>
     </main>
 
     <!-- ===== FOOTER ===== -->
