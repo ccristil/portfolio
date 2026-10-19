@@ -4,10 +4,13 @@
 import { createParticleField } from "./particles.js";
 import { globe, dust, iceberg, decision, appWindow, saturnV, socials } from "./story-shapes.js";
 import { stateAt, stopY, yForStage } from "./timeline.js";
+import { createOrcaLayer } from "./orcas.js";
+import { presenceOf } from "./orca-pod.js";
 
 const root = document.documentElement;
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
-const COUNT = matchMedia("(max-width: 640px)").matches ? 18000 : 40000;
+const mobile = matchMedia("(max-width: 640px)").matches;
+const COUNT = mobile ? 18000 : 40000;
 const params = new URLSearchParams(location.search);
 
 if (!root.classList.contains("has-particles")) throw new Error("WebGL unavailable");
@@ -73,6 +76,16 @@ try {
 }
 
 try {
+  // The orca pod that swims past the iceberg. It's an extra: if it fails,
+  // the story carries on without it.
+  const ICEBERG = NAMES.indexOf("iceberg");
+  let orcas = null;
+  try {
+    orcas = createOrcaLayer(field, { shapeIndex: ICEBERG, shape: SHAPES.iceberg, count: mobile ? 1400 : 3000, reducedMotion });
+  } catch (err) {
+    console.warn("orcas unavailable:", err);
+  }
+
   let stops = [];
   let flySpan = null; // [startY, endY] of the scroll span you fly through the funnel
   function measure() {
@@ -108,6 +121,7 @@ try {
   canvas.addEventListener("webglcontextlost", () => {
     lossTimer = setTimeout(() => {
       stopped = true;
+      orcas?.dispose();
       field.dispose();
       root.classList.remove("has-particles");
     }, 3000);
@@ -142,6 +156,15 @@ try {
     y += (scrollY - y) * (reducedMotion ? 1 : 0.025);
     const { from, to, t } = stateAt(stops, y);
     field.setState(from, to, t, travelAt(y));
+    if (orcas) {
+      try {
+        orcas.update(presenceOf({ from, to, t }, ICEBERG));
+      } catch (err) {
+        console.warn("orcas stopped:", err);
+        orcas.dispose();
+        orcas = null;
+      }
+    }
     if (links) {
       links.classList.toggle("is-live", to === SOCIALS && (from === to || t > 0.9));
       // The cursor parts the particles, which would make a link flinch away.

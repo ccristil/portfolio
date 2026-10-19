@@ -1,0 +1,195 @@
+<!doctype html>
+<!-- Orca pod prototype: the iceberg interlude on its own, with the orca layer.
+     Not linked from anywhere. Serve the repo root and open /dev/orcas.html.
+     URL options: ?orcas=T starts the pod clock at T seconds, freeze=1 stops
+     it, hud=0 hides the panel, reduced=1 previews reduced motion,
+     inspect=1 hides the berg and lines the pod up close (yaw=radians turns
+     them, so you can check the model from any side). -->
+<html lang="en" class="has-particles">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Orca pod prototype</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Instrument+Serif&display=swap"
+      rel="stylesheet"
+    />
+    <script type="importmap">
+      { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js" } }
+    </script>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #030712;
+        color: #f3f4f6;
+        font-family: Inter, system-ui, sans-serif;
+        overflow: hidden;
+      }
+      #particles {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      /* Same look and place as .interlude__caption on the live page. */
+      .caption {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 14vh;
+        margin: 0 auto;
+        max-width: 22ch;
+        padding: 0 16px;
+        text-align: center;
+        font-family: "Instrument Serif", Georgia, serif;
+        font-size: clamp(1.75rem, 4vw, 3rem);
+        letter-spacing: -0.02em;
+        line-height: 1.15;
+        color: #fff;
+        text-shadow: 0 2px 24px rgba(3, 7, 18, 0.9);
+        pointer-events: none;
+      }
+      .hud {
+        position: fixed;
+        left: 16px;
+        top: 16px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        max-width: calc(100% - 32px);
+        font-size: 13px;
+      }
+      .hud[hidden] {
+        display: none;
+      }
+      .hud output {
+        font-variant-numeric: tabular-nums;
+        min-width: 15ch;
+        color: #d8b4fe;
+      }
+      .hud button {
+        font: inherit;
+        color: #f3f4f6;
+        background: rgba(76, 29, 149, 0.35);
+        border: 1px solid rgba(216, 180, 254, 0.35);
+        border-radius: 6px;
+        padding: 6px 10px;
+        cursor: pointer;
+      }
+      .hud button:hover {
+        background: rgba(76, 29, 149, 0.6);
+      }
+      .hud button[aria-pressed="true"] {
+        background: #6d28d9;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="particles" aria-hidden="true"></canvas>
+    <p class="caption">I find out what people actually need,</p>
+    <div class="hud" id="hud">
+      <output id="readout">…</output>
+      <button id="restart">Restart</button>
+      <button id="pass2">Skip to pass 2</button>
+      <button id="away">Scroll away</button>
+      <button id="fast" aria-pressed="false">3× speed</button>
+    </div>
+
+    <script type="module">
+      import { createParticleField } from "../assets/particles/particles.js";
+      import { iceberg, dust } from "../assets/particles/story-shapes.js";
+      import { createOrcaLayer } from "../assets/particles/orcas.js";
+      import { presenceOf, LEAD_IN, CROSSING, BANK, POD, SPINE } from "../assets/particles/orca-pod.js";
+
+      const params = new URLSearchParams(location.search);
+      const mobile = matchMedia("(max-width: 640px)").matches;
+      const reducedMotion =
+        params.get("reduced") === "1" || matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const COUNT = mobile ? 18000 : 40000;
+      const BERG = 0, DUST = 1;
+
+      const berg = iceberg(COUNT);
+      const inspect = params.get("inspect") === "1";
+      if (inspect) berg.opacity = 0;
+      const field = createParticleField({
+        canvas: document.getElementById("particles"),
+        count: COUNT,
+        shapes: [berg, dust(COUNT)],
+        colors: { lo: "#4c1d95", hi: "#d8b4fe" },
+        reducedMotion,
+      });
+      field.uniforms.uBirth.value = 1;
+
+      const orcas = createOrcaLayer(field, {
+        shapeIndex: BERG,
+        shape: berg,
+        count: mobile ? 1400 : 3000,
+        reducedMotion,
+      });
+      if (params.has("orcas")) orcas.setClock(parseFloat(params.get("orcas")) || 0, params.get("freeze") === "1");
+      if (params.get("hud") === "0") document.getElementById("hud").hidden = true;
+
+      // Stands in for scrolling: morph the berg to dust and back, the way
+      // story.js will, so the fade-out and clock reset can be checked.
+      let state = { from: BERG, to: BERG, t: 0 };
+      let morph = null; // { from, to, start }
+      const MORPH_MS = 2500;
+      const awayBtn = document.getElementById("away");
+      awayBtn.onclick = () => {
+        const gone = state.to === DUST;
+        morph = { from: gone ? DUST : BERG, to: gone ? BERG : DUST, start: performance.now() };
+        awayBtn.textContent = gone ? "Scroll away" : "Scroll back";
+      };
+      document.getElementById("restart").onclick = () => orcas.setClock(0, false);
+      document.getElementById("pass2").onclick = () => orcas.setClock(2 * LEAD_IN + CROSSING - 0.5, false);
+      const fastBtn = document.getElementById("fast");
+      fastBtn.onclick = () => {
+        const on = fastBtn.getAttribute("aria-pressed") !== "true";
+        fastBtn.setAttribute("aria-pressed", String(on));
+        orcas.setSpeed(on ? 3 : 1);
+      };
+
+      // Inspect mode: the four orcas stacked up near the camera, side on.
+      function lineUp() {
+        const u = orcas.uniforms;
+        const yaw = parseFloat(params.get("yaw")) || 0;
+        const { cx, cy } = berg.frame;
+        const dx = Math.cos(yaw), dz = -Math.sin(yaw);
+        // Kept under the waterline (y < 0), where they'll swim.
+        [0.24, -0.03, -0.3, -0.55].forEach((dy, i) => {
+          const L = POD[i].L;
+          for (let k = 0; k < SPINE; k++) {
+            const a = L * (0.5 - k / (SPINE - 1));
+            u.uSpine.value[i * SPINE + k].set(cx + dx * a, cy + dy, 1.6 + dz * a);
+          }
+          u.uMotion.value[i].set((performance.now() / 1000) * 4 + i, 1, -BANK, 0);
+        });
+        u.uVisible.value = 1;
+      }
+
+      const readout = document.getElementById("readout");
+      (function loop() {
+        if (morph) {
+          const t = Math.min(1, (performance.now() - morph.start) / MORPH_MS);
+          state = t < 1 ? { from: morph.from, to: morph.to, t } : { from: morph.to, to: morph.to, t: 0 };
+          if (t >= 1) morph = null;
+        }
+        field.setState(state.from, state.to, state.t);
+        const presence = presenceOf(state, BERG);
+        orcas.update(presence);
+        if (inspect) lineUp();
+        const { clock, pass, active } = orcas.info();
+        readout.value = reducedMotion
+          ? "reduced motion: still pod"
+          : `${clock.toFixed(1)}s · ${active ? (pass === 0 ? "pass 1, in front" : "pass 2, behind") : "empty"}`;
+        requestAnimationFrame(loop);
+      })();
+    </script>
+  </body>
+</html>

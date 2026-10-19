@@ -14,6 +14,8 @@
 //   flyTo (shape-space z the camera flies to; see particles.js).
 
 // Centers a shape on the origin and scales it so max(width, height) = 1.
+// Returns the new size and the frame that did it: a raw point (x, y, z) ends
+// up at ((x - cx) * s, (y - cy) * s, z * s).
 function normalize(positions) {
   let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
   for (let i = 0; i < positions.length; i += 3) {
@@ -32,7 +34,7 @@ function normalize(positions) {
     positions[i + 1] = (positions[i + 1] - cy) * s;
     positions[i + 2] *= s;
   }
-  return { w: w * s, h: h * s };
+  return { aspect: { w: w * s, h: h * s }, frame: { cx, cy, s } };
 }
 
 export function makeCanvas(w, h) {
@@ -76,7 +78,7 @@ export function sampleCanvas(canvas, count, { depth = 0.25, minWeight = 0.08 } =
     n++;
   }
   const fill = xs.length / ((maxX - minX + 1) * (maxY - minY + 1));
-  return { positions, lum, aspect: normalize(positions), fill };
+  return { positions, lum, aspect: normalize(positions).aspect, fill };
 }
 
 // Draws an emoji large and samples it. Handy stand-in art for prototyping.
@@ -120,7 +122,9 @@ export async function fromImage(url, count, { maxSize = 420, ...opts } = {}) {
   return sampleCanvas(canvas, count, opts);
 }
 
-// Procedural shapes: fn(i, count) returns [x, y, z, lum].
+// Procedural shapes: fn(i, count) returns [x, y, z, lum]. The result also
+// carries `frame` (see normalize), so other layers can line up with the
+// shape's own coordinates.
 export function fromFunction(count, fn) {
   const positions = new Float32Array(count * 3);
   const lum = new Float32Array(count);
@@ -129,5 +133,6 @@ export function fromFunction(count, fn) {
     positions.set([x, y, z], i * 3);
     lum[i] = l;
   }
-  return { positions, lum, aspect: normalize(positions), fill: 0.6 };
+  const { aspect, frame } = normalize(positions);
+  return { positions, lum, aspect, frame, fill: 0.6 };
 }

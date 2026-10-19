@@ -17,45 +17,9 @@
 
 import * as THREE from "three";
 
-const vertexShader = /* glsl */ `
-  attribute vec3 aPosA;
-  attribute vec3 aPosB;
-  attribute float aLumA;
-  attribute float aLumB;
-  attribute vec4 aRand;
-
-  uniform float uMorph;
-  uniform float uScaleA;
-  uniform float uScaleB;
-  uniform float uExposureA;
-  uniform float uExposureB;
-  uniform float uOpacityA;
-  uniform float uOpacityB;
-  uniform float uSpinA;
-  uniform float uSpinB;
-  uniform float uLoose;
-  uniform float uLooseA;
-  uniform float uLooseB;
-  uniform float uFlyA;
-  uniform float uFlyB;
-  uniform float uCalmA;
-  uniform float uCalmB;
-  uniform float uCrossfade;
-  uniform float uScatter;
-  uniform float uBirth;
-  uniform float uTime;
-  uniform float uAmbient;
-  uniform vec3 uMouse;
-  uniform float uMouseStrength;
-  uniform float uMouseRadius;
-  uniform float uSize;
-  uniform float uPixelRatio;
-
-  varying float vLum;
-  varying float vSpark;
-  varying float vFade;
-  varying float vExposure;
-
+// The flow-field noise every particle drifts through. Exported so extra
+// point layers (orcas.js) drift through the same field.
+export const noiseChunk = /* glsl */ `
   // 3D simplex noise: Ian McEwan & Stefan Gustavson (Ashima Arts), MIT.
   vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
   vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -113,7 +77,47 @@ const vertexShader = /* glsl */ `
       snoise(p + vec3(-12.7, 44.1, -23.5))
     );
   }
+`;
 
+const vertexShader = /* glsl */ `
+  attribute vec3 aPosA;
+  attribute vec3 aPosB;
+  attribute float aLumA;
+  attribute float aLumB;
+  attribute vec4 aRand;
+
+  uniform float uMorph;
+  uniform float uScaleA;
+  uniform float uScaleB;
+  uniform float uExposureA;
+  uniform float uExposureB;
+  uniform float uOpacityA;
+  uniform float uOpacityB;
+  uniform float uSpinA;
+  uniform float uSpinB;
+  uniform float uLoose;
+  uniform float uLooseA;
+  uniform float uLooseB;
+  uniform float uFlyA;
+  uniform float uFlyB;
+  uniform float uCalmA;
+  uniform float uCalmB;
+  uniform float uCrossfade;
+  uniform float uScatter;
+  uniform float uBirth;
+  uniform float uTime;
+  uniform float uAmbient;
+  uniform vec3 uMouse;
+  uniform float uMouseStrength;
+  uniform float uMouseRadius;
+  uniform float uSize;
+  uniform float uPixelRatio;
+
+  varying float vLum;
+  varying float vSpark;
+  varying float vFade;
+  varying float vExposure;
+${noiseChunk}
   vec3 spinY(vec3 p, float a) {
     float c = cos(a), s = sin(a);
     return vec3(c * p.x + s * p.z, p.y, -s * p.x + c * p.z);
@@ -185,7 +189,8 @@ const vertexShader = /* glsl */ `
   }
 `;
 
-const fragmentShader = /* glsl */ `
+// Exported so extra point layers (orcas.js) glow the same way.
+export const fragmentShader = /* glsl */ `
   uniform vec3 uColorLo;
   uniform vec3 uColorHi;
   uniform float uOpacity;
@@ -418,6 +423,10 @@ export function createParticleField({
     setProgress,
     screenBox,
     uniforms,
+    // For extra layers drawn in the same scene (orcas.js).
+    scene,
+    camera,
+    shapeScale: (i) => shapeScales[i],
     // Plays the load-in. Resolves when particles have landed.
     birth(duration = 2.6) {
       if (reducedMotion) return Promise.resolve();
