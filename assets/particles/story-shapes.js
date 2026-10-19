@@ -1,6 +1,6 @@
 // The portfolio story's shapes. All are built in code, so no image assets.
-// Procedural ones (globe, dust, iceberg, decision) also run in Node for tests;
-// canvas-drawn ones (appWindow, saturnV, socials) need a browser.
+// Procedural ones (globe, dust, iceberg, decision, saturnV) also run in Node
+// for tests; canvas-drawn ones (appWindow, socials) need a browser.
 
 import { fromFunction, makeCanvas, sampleCanvas } from "./shapes.js";
 
@@ -350,45 +350,181 @@ export function appWindow(count) {
   }, { depth: 0.12 });
 }
 
-// "Properly.": a Saturn V lifting off, exhaust plume included.
+// "Properly.": a Saturn V lifting off, built in 3D. The body is a surface of
+// revolution (SATURN_BODY), plus fins, engine fairings, five F-1 bells, the
+// launch escape tower and an exhaust plume. It spins around its long axis, and
+// the black-and-white roll pattern is what makes the turn visible (NASA
+// painted it for the same reason). Units are metres, roughly to scale, except
+// it's drawn SATURN_GIRTH times wider: true proportions read as a thin line.
+const SATURN_GIRTH = 1.6;
+// Body profile, bottom to top: [y, radius].
+const SATURN_BODY = [
+  [0, 5.05], // S-IC base
+  [42, 5.05], // S-IC / S-II
+  [66, 5.05], // top of S-II
+  [72.5, 3.3], // interstage taper
+  [88, 3.3], // S-IVB + instrument unit
+  [96, 1.95], // spacecraft adapter
+  [100, 1.95], // service module
+  [103.5, 0.35], // command module
+];
+const SATURN_TOP = 103.5;
+const SATURN_SEAMS = [0.15, 42, 47.5, 66, 72.5, 88, 96, 100]; // stage joints: bright rings
+const SATURN_ENGINE_EXIT = -5.5; // y of the F-1 bell exits
+const SATURN_PLUME_END = -34;
+
 export function saturnV(count) {
-  const shape = drawn(300, 1020, count, (ctx) => {
-    const poly = (pts, fill) => {
-      ctx.fillStyle = fill;
-      ctx.beginPath();
-      ctx.moveTo(...pts[0]);
-      for (const p of pts.slice(1)) ctx.lineTo(...p);
-      ctx.closePath();
-      ctx.fill();
-    };
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(147, 20, 6, 70); // escape tower
-    poly([[150, 90], [178, 140], [122, 140]], "#fff"); // command module
-    poly([[122, 140], [178, 140], [192, 230], [108, 230]], "#e6e6e6"); // service module + adapter
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(108, 230, 84, 130); // third stage
-    poly([[108, 360], [192, 360], [205, 400], [95, 400]], "#d9d9d9"); // interstage
-    ctx.fillRect(95, 400, 110, 160); // second stage
-    ctx.fillRect(95, 560, 110, 200); // first stage
-    ctx.fillStyle = "#444";
-    ctx.fillRect(95, 456, 110, 14); // roll-pattern bands
-    ctx.fillRect(95, 610, 110, 14);
-    ctx.fillRect(95, 700, 110, 14);
-    poly([[95, 690], [58, 785], [95, 785]], "#fff"); // fins
-    poly([[205, 690], [242, 785], [205, 785]], "#fff");
-    for (const x of [112, 131, 150, 169, 188]) poly([[x - 7, 760], [x + 7, 760], [x + 11, 795], [x - 11, 795]], "#e0e0e0");
-    const plume = ctx.createLinearGradient(0, 810, 0, 1020);
-    plume.addColorStop(0, "#fff");
-    plume.addColorStop(1, "#555");
-    ctx.fillStyle = plume;
-    ctx.beginPath();
-    ctx.moveTo(92, 810);
-    ctx.quadraticCurveTo(60, 930, 150, 1020);
-    ctx.quadraticCurveTo(240, 930, 208, 810);
-    ctx.closePath();
-    ctx.fill();
-  }, { depth: 0.15 });
+  const TAU = Math.PI * 2;
+  const outer = [0, 1, 2, 3].map((k) => TAU / 8 + (k * TAU) / 4); // fins, fairings, outer engines
+
+  function radiusAt(y) {
+    for (let i = 0; i < SATURN_BODY.length - 1; i++) {
+      const [y0, r0] = SATURN_BODY[i], [y1, r1] = SATURN_BODY[i + 1];
+      if (y <= y1) return r0 + ((r1 - r0) * (y - y0)) / (y1 - y0);
+    }
+    return SATURN_BODY[SATURN_BODY.length - 1][1];
+  }
+
+  // The roll pattern. Dark panels get few, dim points, so they read as gaps.
+  function paint(y, a) {
+    a = ((a % TAU) + TAU) % TAU;
+    const s8 = Math.floor(a / (TAU / 8));
+    const s4 = Math.floor(a / (TAU / 4));
+    let dark = false;
+    if (y > 1 && y < 22) dark = s8 % 2 === 0; // S-IC lower stripes
+    else if (y > 26 && y < 31) dark = s8 % 2 === 1; // intertank, offset
+    else if (y > 38.5 && y < 42) dark = true; // forward skirt band
+    else if (y > 72.5 && y < 78) dark = s4 % 2 === 0; // S-IVB aft quadrants
+    if (dark) return 0.06 + Math.random() * 0.06;
+    return 0.78 + 0.15 * (y / SATURN_TOP) + Math.random() * 0.07;
+  }
+
+  // Body segments weighted by their side area, so the surface is evenly dotted.
+  const segments = SATURN_BODY.slice(0, -1).map(([y0, r0], i) => {
+    const [y1, r1] = SATURN_BODY[i + 1];
+    return { y0, r0, y1, r1, area: Math.PI * (r0 + r1) * Math.hypot(y1 - y0, r1 - r0) };
+  });
+  const bodyArea = segments.reduce((s, g) => s + g.area, 0);
+
+  function body() {
+    for (;;) {
+      let t = Math.random() * bodyArea;
+      const g = segments.find((s) => (t -= s.area) <= 0) ?? segments[segments.length - 1];
+      const f = Math.random();
+      const r = g.r0 + (g.r1 - g.r0) * f;
+      if (Math.random() > r / Math.max(g.r0, g.r1)) continue; // even density on cones
+      const y = g.y0 + (g.y1 - g.y0) * f;
+      const a = Math.random() * TAU;
+      const lum = paint(y, a);
+      if (Math.random() > 0.15 + lum) continue; // dark panels stay sparse
+      return [r * Math.cos(a), y, r * Math.sin(a), lum];
+    }
+  }
+
+  function seam() {
+    const y = SATURN_SEAMS[(Math.random() * SATURN_SEAMS.length) | 0] + gauss() * 0.08;
+    const r = radiusAt(y) * 1.01;
+    const a = Math.random() * TAU;
+    return [r * Math.cos(a), y, r * Math.sin(a), 0.9 + Math.random() * 0.1];
+  }
+
+  // A fin: a flat trapezoid sticking out from the base, root 5 m to tip 9.2 m.
+  function fin() {
+    const a = outer[(Math.random() * 4) | 0];
+    for (;;) {
+      const t = Math.random();
+      const top = 10 + (3 - 10) * t;
+      if (Math.random() > (top + 0.5) / 10.5) continue;
+      const edge = Math.random() < 0.3;
+      const y = edge ? (Math.random() < 0.5 ? top : -0.5) : -0.5 + Math.random() * (top + 0.5);
+      const rr = 5.05 + 4.15 * t;
+      const off = gauss() * 0.08; // thickness
+      return [
+        rr * Math.cos(a) - off * Math.sin(a),
+        y,
+        rr * Math.sin(a) + off * Math.cos(a),
+        edge ? 0.92 + Math.random() * 0.08 : 0.6 + Math.random() * 0.15,
+      ];
+    }
+  }
+
+  // Engine fairings: cone-shaped shrouds on the body over each outer engine.
+  function fairing() {
+    const a0 = outer[(Math.random() * 4) | 0];
+    const cx = 4.4 * Math.cos(a0), cz = 4.4 * Math.sin(a0);
+    for (;;) {
+      const u = Math.random();
+      const r = 2.1 * (1 - u);
+      const a = Math.random() * TAU;
+      const x = cx + r * Math.cos(a), z = cz + r * Math.sin(a);
+      if (Math.hypot(x, z) < 5.0) continue; // hidden inside the body
+      return [x, -0.5 + u * 11, z, 0.55 + Math.random() * 0.15];
+    }
+  }
+
+  // The five F-1 bells: one in the middle, four at the corners.
+  function engine() {
+    const k = (Math.random() * 5) | 0;
+    const cx = k === 4 ? 0 : 3.6 * Math.cos(outer[k]);
+    const cz = k === 4 ? 0 : 3.6 * Math.sin(outer[k]);
+    const rim = Math.random() < 0.3;
+    const u = rim ? 1 : Math.random() ** 0.7; // 0 at the throat, 1 at the exit
+    const r = 0.75 + 1.1 * u ** 1.6;
+    const a = Math.random() * TAU;
+    return [cx + r * Math.cos(a), SATURN_ENGINE_EXIT * u, cz + r * Math.sin(a), rim ? 1 : 0.4 + 0.3 * u];
+  }
+
+  // Launch escape tower: a four-legged truss, the motor and its nose spike.
+  function tower() {
+    const k = Math.random();
+    if (k < 0.45) {
+      const a = outer[(Math.random() * 4) | 0];
+      const t = Math.random();
+      const r = 0.9 + (0.35 - 0.9) * t;
+      return [r * Math.cos(a), SATURN_TOP + 4 * t, r * Math.sin(a), 0.8 + Math.random() * 0.1];
+    }
+    if (k < 0.9) {
+      const y = SATURN_TOP + 4 + Math.random() * 5.5;
+      const r = y < SATURN_TOP + 8 ? 0.38 : 0.38 * (1 - (y - SATURN_TOP - 8) / 1.5) + 0.05;
+      const a = Math.random() * TAU;
+      return [r * Math.cos(a), y, r * Math.sin(a), 0.85 + Math.random() * 0.1];
+    }
+    return [gauss() * 0.03, SATURN_TOP + 9.5 + Math.random() * 1.2, gauss() * 0.03, 0.95];
+  }
+
+  // Exhaust: a bright column that widens and fades as it falls away. Points
+  // crowd the core and the top, so it glows hottest right under the engines.
+  function plume() {
+    const u = Math.random() ** 1.8;
+    const y = SATURN_ENGINE_EXIT + u * (SATURN_PLUME_END - SATURN_ENGINE_EXIT);
+    const R = 5.2 + 3 * u ** 0.8;
+    const f = Math.min(1, Math.abs(gauss()) / 2.2);
+    const a = Math.random() * TAU;
+    const lum = (1 - 0.7 * u) * (1 - 0.4 * f) + Math.random() * 0.05;
+    return [R * f * Math.cos(a), y + gauss() * 0.4, R * f * Math.sin(a), lum];
+  }
+
+  // [share of points, maker]. Shares are normalized, so they needn't sum to 1.
+  const parts = [
+    [0.52, body],
+    [0.06, seam],
+    [0.07, fin],
+    [0.04, fairing],
+    [0.07, engine],
+    [0.03, tower],
+    [0.24, plume],
+  ];
+  const total = parts.reduce((s, [w]) => s + w, 0);
+  const shape = fromFunction(count, () => {
+    let t = Math.random() * total;
+    const [, make] = parts.find(([w]) => (t -= w) <= 0) ?? parts[parts.length - 1];
+    const [x, y, z, lum] = make();
+    return [x * SATURN_GIRTH, y, z * SATURN_GIRTH, Math.min(1, lum)];
+  });
+  shape.fill = 0.8; // higher than the true coverage, to lift the engine's dimming
   shape.fit = 0.8;
+  shape.spin = 0.15;
+  shape.loose = 0.3;
   return shape;
 }
 
