@@ -582,6 +582,18 @@
           width: 56px;
           height: 56px;
         }
+        /* The nav sits at the bottom on phones; the top belongs to the
+           docked sentence (.sentence-dock). */
+        .nav-dock {
+          top: auto;
+          bottom: 14px;
+        }
+        html {
+          scroll-padding-top: 1.5rem;
+        }
+        body {
+          padding-bottom: 84px;
+        }
       }
 
       /* ===== Particle story ===== */
@@ -639,6 +651,97 @@
       }
       html.has-particles .interlude--closing {
         display: block;
+      }
+
+      /* ===== Sentence dock (assets/sentence-dock.js) =====
+         As each interlude caption scrolls away, its words fly into the dock;
+         the closing stop gathers them back into one sentence. The hidden
+         .sentence-dock and .sentence-finale copies only mark where words land. */
+      .sentence-layer {
+        position: fixed;
+        inset: 0;
+        z-index: 40;
+        pointer-events: none;
+      }
+      .sentence-word {
+        position: absolute;
+        left: 0;
+        top: 0;
+        white-space: nowrap;
+        transform-origin: 0 0;
+        will-change: transform, opacity;
+        opacity: 0;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+        color: #fff;
+        text-shadow:
+          0 2px 18px rgba(3, 7, 18, 0.95),
+          0 0 2px rgba(3, 7, 18, 0.9);
+      }
+      .sentence-dock,
+      .sentence-finale {
+        position: fixed;
+        visibility: hidden;
+        font-weight: 700;
+      }
+      .sentence-dock {
+        top: 82px;
+        right: 22px;
+        text-align: right;
+        font-size: 14px;
+        line-height: 1.55;
+        letter-spacing: -0.01em;
+      }
+      .sentence-dock > span {
+        display: block;
+        white-space: nowrap;
+      }
+      .sentence-finale {
+        top: 13vh;
+        left: 16px;
+        right: 16px;
+        text-align: center;
+        font-size: clamp(1.3rem, 2.8vw, 2.25rem);
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+      }
+      .sentence-finale > span {
+        display: block;
+      }
+      .sentence-finale > span:last-child {
+        font-size: 1.35em;
+        margin-top: 0.1em;
+      }
+      .sentence-dock > span:last-child,
+      .sentence-finale > span:last-child {
+        font-style: italic;
+      }
+      /* Phones dock one wrapped line at the top, over a scrim. */
+      @media (max-width: 640px) {
+        .sentence-dock {
+          top: 16px;
+          left: 16px;
+          right: 16px;
+          text-align: left;
+          line-height: 1.45;
+        }
+        .sentence-dock > span {
+          display: inline;
+          white-space: normal;
+        }
+        .sentence-layer::before {
+          content: "";
+          position: absolute;
+          inset: 0 0 auto;
+          height: 110px;
+          background: linear-gradient(rgba(3, 7, 18, 0.85), transparent);
+          opacity: 0;
+          transition: opacity 0.4s ease;
+        }
+        .sentence-layer.is-docked::before {
+          opacity: 1;
+        }
       }
     </style>
   </head>
@@ -2575,11 +2678,11 @@
         },
         { passive: true }
       );
-      // Tab widths change with fonts and the mobile breakpoint: re-place the
-      // highlight without animating.
+      // Tab widths change as fonts and icons load and at the mobile
+      // breakpoint: re-place the highlight without animating.
       const placePill = () => activeSec && setActive(activeSec, false);
-      window.addEventListener("resize", placePill);
-      document.fonts.ready.then(placePill);
+      const tabSizes = new ResizeObserver(placePill);
+      navTabs.forEach((t) => tabSizes.observe(t));
       updateActiveTab();
       placePill();
 
@@ -2839,6 +2942,7 @@
     </script>
 
     <script src="index.js" defer></script>
+    <script src="assets/sentence-dock.js" defer></script>
     <script type="module">
       if (document.documentElement.classList.contains("has-particles")) {
         import("./assets/particles/story.js").catch((err) => {
