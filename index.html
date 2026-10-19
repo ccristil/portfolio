@@ -606,9 +606,11 @@
         position: relative;
         z-index: 1;
       }
+      /* Tall so each morph gets a long stretch of scroll; the caption sticks
+         near the bottom of the screen for the whole stretch. */
       .interlude {
-        min-height: 100vh;
-        min-height: 100svh;
+        min-height: 180vh;
+        min-height: 180svh;
         display: flex;
         align-items: flex-end;
         justify-content: center;
@@ -616,6 +618,8 @@
         text-align: center;
       }
       .interlude__caption {
+        position: sticky;
+        bottom: 14vh;
         max-width: 22ch;
         font-size: clamp(1.75rem, 4vw, 3rem);
         font-weight: 700;
