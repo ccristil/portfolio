@@ -354,6 +354,14 @@ export function createParticleField({
     uniforms.uCalmB.value = shapes[to].flyTo == null ? 0 : 1;
   }
 
+  // How big shape i is on screen at rest, in CSS px. It sits centered on the
+  // viewport, so this is enough to lay a link over it.
+  function screenBox(i) {
+    const visH = 2 * camera.position.z * Math.tan((camera.fov * Math.PI) / 360);
+    const pxPerUnit = (shapeScales[i] * innerHeight) / visH;
+    return { w: shapes[i].aspect.w * pxPerUnit, h: shapes[i].aspect.h * pxPerUnit };
+  }
+
   // Convenience for linear stories: f runs 0 … shapes.length - 1.
   function setProgress(f) {
     if (!Number.isFinite(f)) f = 0;
@@ -408,6 +416,7 @@ export function createParticleField({
   return {
     setState,
     setProgress,
+    screenBox,
     uniforms,
     // Plays the load-in. Resolves when particles have landed.
     birth(duration = 2.6) {

@@ -1,0 +1,131 @@
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  .stages { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; }
+  .stage { position: relative; aspect-ratio: 16 / 10; background: #030712; overflow: hidden; border-radius: 8px; }
+  .st-bg { position: absolute; inset: 0; background: url(/files/mountains_bg.jpg) center / cover; opacity: 0; transition: opacity 0.9s ease; }
+  .st-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, #030712, rgba(0,0,0,0.4) 55%, rgba(0,0,0,0.4)); }
+  .st-nav { position: absolute; top: 0; left: 0; right: 0; height: 26px; display: flex; gap: 12px; align-items: center; padding: 0 14px;
+    font: 700 7px "Courier New", monospace; color: #9ca3af; background: rgba(3,7,18,0.6); border-bottom: 1px solid rgba(255,255,255,0.06);
+    opacity: 0; transform: translateY(-6px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .st-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .st-name { position: relative; font: 700 30px Inter, system-ui, sans-serif; color: #fff; letter-spacing: -0.02em; line-height: 1.15; }
+  .st-sub { position: relative; margin-top: 8px; font: 12px "Courier New", monospace; color: #d1d5db; line-height: 1.3; }
+  .mask { display: inline-block; overflow: hidden; vertical-align: top; }
+  .txt { display: inline-block; }
+  .st-btn { margin-top: 14px; padding: 5px 11px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); border-radius: 6px;
+    font: 10px "Courier New", monospace; color: #fff; opacity: 0; transform: translateY(6px); transition: opacity 0.6s ease 0.15s, transform 0.6s ease 0.15s; }
+
+  .bar { position: absolute; top: 0; left: 50%; height: 100%; width: var(--w); margin-left: calc(var(--w) / -2); pointer-events: none;
+    transform: scaleX(var(--s0)); transform-origin: 50% 50%; opacity: 0; }
+  .bar .h { position: absolute; left: 0; right: 0; height: 50%; background: #fff; transition: transform 0.5s cubic-bezier(.7,0,.2,1), opacity 0.5s ease; }
+  .bar .top { top: 0; } .bar .bot { bottom: 0; }
+
+  /* shared: blink 3x, then morph cursor -> bar */
+  .s1 .st-name .bar { animation: introBlink 0.5s step-end 3; }
+  @keyframes introBlink { 0%, 49.9% { opacity: 1; } 50%, 100% { opacity: 0; } }
+  .s2 .st-name .bar { animation: none; opacity: 1; transform: scaleX(1); transition: transform 0.55s cubic-bezier(.7,0,.2,1), opacity 0.4s ease; }
+  .s6 .st-bg { opacity: 1; }
+  .s6 .st-nav, .s6 .st-btn { opacity: 1; transform: none; }
+
+  /* A — wipe: bar retracts to the right, uncovering the text */
+  [data-v="a"] .st-name .txt, [data-v="a"] .st-sub .txt { opacity: 0; }
+  [data-v="a"].s3 .st-name .txt { opacity: 1; }
+  [data-v="a"].s3 .st-name .bar { transform-origin: 100% 50%; transform: scaleX(0); }
+  [data-v="a"] .st-sub .bar { opacity: 1; transform: scaleX(0); transform-origin: 0 50%; transition: transform 0.4s cubic-bezier(.7,0,.2,1); }
+  [data-v="a"].s4 .st-sub .bar { transform: scaleX(1); }
+  [data-v="a"].s5 .st-sub .txt { opacity: 1; }
+  [data-v="a"].s5 .st-sub .bar { transform-origin: 100% 50%; transform: scaleX(0); }
+
+  /* B — horizon: cursor flattens into a line, name rises from behind it, subtitle drops below */
+  [data-v="b"] .st-name .bar { transform-origin: 50% 100%; }
+  [data-v="b"].s2 .st-name .bar { transform: scaleX(1) scaleY(0.06); }
+  [data-v="b"] .st-name .txt { transform: translateY(110%); transition: transform 0.6s cubic-bezier(.2,.8,.2,1); }
+  [data-v="b"].s3 .st-name .txt { transform: none; }
+  [data-v="b"] .st-sub .txt { transform: translateY(-110%); transition: transform 0.5s cubic-bezier(.2,.8,.2,1); }
+  [data-v="b"].s4 .st-sub .txt { transform: none; }
+  [data-v="b"].s5 .st-name .bar { transform: scaleX(0) scaleY(0.06); }
+  [data-v="b"] .st-sub .bar { display: none; }
+
+  /* C — split: bar cracks open top/bottom, name revealed in the gap */
+  [data-v="c"] .st-name .txt { opacity: 0; clip-path: inset(50% 0 50% 0); transition: clip-path 0.5s cubic-bezier(.7,0,.2,1), opacity 0.2s; }
+  [data-v="c"].s3 .st-name .txt { opacity: 1; clip-path: inset(0 0 0 0); }
+  [data-v="c"].s3 .st-name .top { transform: translateY(-100%); opacity: 0; }
+  [data-v="c"].s3 .st-name .bot { transform: translateY(100%); opacity: 0; }
+  [data-v="c"] .st-sub .txt { opacity: 0; transform: translateY(5px); transition: opacity 0.5s ease, transform 0.5s ease; }
+  [data-v="c"].s4 .st-sub .txt { opacity: 1; transform: none; }
+  [data-v="c"] .st-sub .bar { display: none; }
+
+  .reset, .reset * { transition: none !important; animation: none !important; }
+  .replay { margin-top: 10px; font: 12px system-ui; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--text-tertiary, #888);
+    background: transparent; color: inherit; cursor: pointer; }
+</style>
+
+<h2>Which reveal feels right?</h2>
+<p class="subtitle">All three share your sequence: cursor in the center blinks 3×, stretches into a white bar, name + subtitle appear, then the page (nav, mountains, button) fades in. Only the moment the bar turns into your name differs. ~4.5s total. Hit Replay to rewatch.</p>
+
+<div class="cards stages">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image"><div class="stage" data-v="a"></div></div>
+    <div class="card-body">
+      <h3>A — Wipe (closest to Room &amp; Pillar)</h3>
+      <p>Bar covers the name, then retracts to the right to uncover it. A second, smaller bar does the same for the subtitle.</p>
+      <button class="replay">Replay</button>
+    </div>
+  </div>
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image"><div class="stage" data-v="b"></div></div>
+    <div class="card-body">
+      <h3>B — Horizon</h3>
+      <p>Cursor flattens into a thin line. Your name rises up from behind it, the subtitle drops down below it, then the line disappears.</p>
+      <button class="replay">Replay</button>
+    </div>
+  </div>
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image"><div class="stage" data-v="c"></div></div>
+    <div class="card-body">
+      <h3>C — Split</h3>
+      <p>The bar cracks open top and bottom like a slit, with your name revealed in the gap. Subtitle fades up underneath.</p>
+      <button class="replay">Replay</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const TPL = `
+    <div class="st-bg"></div>
+    <div class="st-nav"><span>Home</span><span>Portfolio</span><span>Skills</span><span>Experience</span></div>
+    <div class="st-center">
+      <div class="st-name"><span class="mask"><span class="txt">Cristian Cruz</span></span><span class="bar"><span class="h top"></span><span class="h bot"></span></span></div>
+      <div class="st-sub"><span class="mask"><span class="txt">I build things that are <b>beautiful</b></span></span><span class="bar"><span class="h top"></span><span class="h bot"></span></span></div>
+      <div class="st-btn">Resume</div>
+    </div>`;
+  const STEPS = [[300, "s1"], [1900, "s2"], [2550, "s3"], [2950, "s4"], [3350, "s5"], [3800, "s6"]];
+  const stages = [...document.querySelectorAll(".stage")];
+  stages.forEach((s) => (s.innerHTML = TPL));
+
+  function measure(s) {
+    s.querySelectorAll(".st-name, .st-sub").forEach((row) => {
+      const w = row.querySelector(".txt").offsetWidth + 8;
+      const bar = row.querySelector(".bar");
+      bar.style.setProperty("--w", w + "px");
+      bar.style.setProperty("--s0", (2 / w).toFixed(4));
+    });
+  }
+  function play(s) {
+    (s._t || []).forEach(clearTimeout);
+    s.classList.add("reset");
+    STEPS.forEach(([, c]) => s.classList.remove(c));
+    void s.offsetWidth;
+    s.classList.remove("reset");
+    s._t = STEPS.map(([ms, c]) => setTimeout(() => s.classList.add(c), ms));
+  }
+  document.querySelectorAll(".replay").forEach((btn) =>
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      play(btn.closest(".card").querySelector(".stage"));
+    })
+  );
+  document.fonts.ready.then(() => stages.forEach((s) => { measure(s); play(s); }));
+})();
+</script>

@@ -1,6 +1,6 @@
 // The portfolio story's shapes. All are built in code, so no image assets.
-// Procedural ones (globe, dust, decision) also run in Node for tests;
-// canvas-drawn ones (people, appWindow, saturnV) need a browser.
+// Procedural ones (globe, dust, iceberg, decision) also run in Node for tests;
+// canvas-drawn ones (appWindow, saturnV, socials) need a browser.
 
 import { fromFunction, makeCanvas, sampleCanvas } from "./shapes.js";
 
@@ -39,6 +39,225 @@ export function dust(count) {
   shape.fit = "cover";
   shape.opacity = 0.25;
   shape.fill = 1;
+  return shape;
+}
+
+// "I find out what people actually need": an iceberg. The bright, crisp tip
+// above the waterline is what people ask for; the much larger, dimmer mass
+// below is what they actually need. Stylised and faceted: each part is a stack
+// of polygon rings joined by flat faces, like cut ice. Brightness depends on y
+// only, so the lighting stays put while it turns.
+const ICE_BOTTOM = -1.55; // the keel; the waterline is y = 0 and the peak 0.62
+const ICE_WATER = 1.35; // radius of the water surface around the berg
+const ICE_STRATA = [-0.42, -0.78, -1.12]; // faint layers inside the mass
+
+export function iceberg(count) {
+  // Seeded so the berg keeps the same silhouette on every load.
+  let seed = 7;
+  const rand = () => {
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const TAU = Math.PI * 2;
+
+  // One faceted part: rings of n points at each level, joined by flat faces.
+  // Levels run bottom to top (inside() relies on it); r = 0 makes an apex.
+  function part(n, levels) {
+    const base = Array.from({ length: n }, (_, k) => ((k + (rand() - 0.5) * 0.7) / n) * TAU);
+    const rings = levels.map(({ y, r, cx = 0, cz = 0, flat }) =>
+      base.map((a0) => {
+        const a = a0 + ((rand() - 0.5) * 0.3 * TAU) / n;
+        const rr = r * (0.78 + rand() * 0.44);
+        const yy = flat ? y : y + (rand() - 0.5) * 0.08;
+        return [cx + rr * Math.cos(a), yy, cz + rr * Math.sin(a)];
+      })
+    );
+    const tris = [];
+    const edges = [];
+    // Underwater apexes, where many edges meet. Their points get thinned out,
+    // or they pile up and blow out to white.
+    const sunk = (L) => levels[L].r === 0 && levels[L].y < 0;
+    for (let L = 0; L < rings.length - 1; L++) {
+      for (let k = 0; k < n; k++) {
+        const a = rings[L][k], b = rings[L][(k + 1) % n];
+        const c = rings[L + 1][(k + 1) % n], d = rings[L + 1][k];
+        tris.push([a, b, c], [a, c, d]);
+        const tip = sunk(L) ? 0 : sunk(L + 1) ? 1 : null;
+        edges.push(Object.assign([a, d], { tip }), Object.assign([a, c], { tip }));
+        if (L > 0) edges.push([a, b]);
+      }
+    }
+    const ys = rings.map((ring) => ring.reduce((s, p) => s + p[1], 0) / n);
+    return { tris, edges, rings, ys };
+  }
+
+  const main = part(9, [
+    { y: ICE_BOTTOM, r: 0, cx: 0.12 },
+    { y: -1.36, r: 0.36, cx: 0.1 },
+    { y: -0.98, r: 0.8, cx: 0.04 },
+    { y: -0.55, r: 0.9 },
+    { y: -0.2, r: 0.72 },
+    { y: 0, r: 0.58, flat: true },
+    { y: 0.17, r: 0.44, cx: -0.05 },
+    { y: 0.4, r: 0.2, cx: -0.15 },
+    { y: 0.62, r: 0, cx: -0.17 },
+  ]);
+  const peak = part(7, [
+    { y: 0, r: 0.3, cx: 0.3, flat: true },
+    { y: 0.19, r: 0.16, cx: 0.33 },
+    { y: 0.36, r: 0, cx: 0.37 },
+  ]);
+  // An underwater shelf that reaches out past the tip.
+  const shelf = part(7, [
+    { y: -1.26, r: 0, cx: 0.36 },
+    { y: -1.02, r: 0.34, cx: 0.48 },
+    { y: -0.6, r: 0.5, cx: 0.62 },
+    { y: -0.24, r: 0, cx: 0.5 },
+  ]);
+  const parts = [main, peak, shelf];
+
+  // Is (x, y, z) inside a part? Interpolates its cross-section at y.
+  function inside({ rings, ys }, x, y, z) {
+    if (y < ys[0] || y > ys[ys.length - 1]) return false;
+    let L = 0;
+    while (L < ys.length - 2 && y > ys[L + 1]) L++;
+    const f = (y - ys[L]) / (ys[L + 1] - ys[L] || 1);
+    const poly = rings[L].map((p, k) => {
+      const q = rings[L + 1][k];
+      return [p[0] + (q[0] - p[0]) * f, p[2] + (q[2] - p[2]) * f];
+    });
+    let hit = false;
+    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      const [xi, zi] = poly[i], [xj, zj] = poly[j];
+      if (zi > z !== zj > z && x < ((xj - xi) * (z - zi)) / (zj - zi) + xi) hit = !hit;
+    }
+    return hit;
+  }
+  const insideOther = (self, x, y, z) => parts.some((p) => p !== self && inside(p, x, y, z));
+  const insideAny = (x, y, z) => parts.some((p) => inside(p, x, y, z));
+
+  // Weighted picking of triangles (by area) and edges (by length).
+  function picker(items, weight) {
+    const cum = [];
+    let total = 0;
+    for (const it of items) cum.push((total += weight(it)));
+    return () => {
+      const t = Math.random() * total;
+      let a = 0, b = cum.length - 1;
+      while (a < b) {
+        const m = (a + b) >> 1;
+        cum[m] < t ? (a = m + 1) : (b = m);
+      }
+      return items[a];
+    };
+  }
+  const sub = (p, q) => [p[0] - q[0], p[1] - q[1], p[2] - q[2]];
+  const area = ([a, b, c]) => {
+    const u = sub(b, a), v = sub(c, a);
+    return Math.hypot(u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]);
+  };
+  const len = ([a, b]) => Math.hypot(...sub(b, a));
+  const tagged = (key, keep) => parts.flatMap((p) => p[key].filter(keep).map((item) => ({ item, part: p })));
+  const midY = (pts) => pts.reduce((s, p) => s + p[1], 0) / pts.length;
+  const above = (pts) => midY(pts) > 0.001;
+  const below = (pts) => midY(pts) < -0.001;
+  const pickTriUp = picker(tagged("tris", above), (t) => area(t.item));
+  const pickTriDown = picker(tagged("tris", below), (t) => area(t.item));
+  const pickEdgeUp = picker(tagged("edges", above), (e) => len(e.item));
+  const pickEdgeDown = picker(tagged("edges", below), (e) => len(e.item));
+
+  // Bright above the water, fading the deeper you go; edges a step brighter.
+  const lumAt = (y, edge) => {
+    if (y > 0) return Math.min(1, (edge ? 0.92 : 0.66) + 0.12 * (y / 0.62) + Math.random() * 0.08);
+    const d = Math.min(1, y / ICE_BOTTOM); // the keel's jitter dips just below ICE_BOTTOM
+    return (edge ? 0.42 : 0.24) + 0.32 * (1 - d) ** 1.1 + Math.random() * 0.06;
+  };
+
+  // Points where parts overlap are skipped, so each face shows only outside.
+  function onTri(pick) {
+    for (;;) {
+      const { item: [a, b, c], part: p } = pick();
+      let u = Math.random(), v = Math.random();
+      if (u + v > 1) (u = 1 - u), (v = 1 - v);
+      const pt = [0, 1, 2].map((i) => a[i] + (b[i] - a[i]) * u + (c[i] - a[i]) * v);
+      if (!insideOther(p, ...pt)) return pt;
+    }
+  }
+  function onEdge(pick) {
+    for (;;) {
+      const { item, part: p } = pick();
+      const [a, b] = item;
+      const t = Math.random();
+      if (item.tip != null) {
+        const dist = (item.tip === 0 ? t : 1 - t) * len(item);
+        if (Math.random() > dist / 0.3) continue;
+      }
+      const pt = [0, 1, 2].map((i) => a[i] + (b[i] - a[i]) * t + (Math.random() - 0.5) * 0.006);
+      if (!insideOther(p, ...pt)) return pt;
+    }
+  }
+  function inVolume(yMin, yMax) {
+    for (;;) {
+      const x = -1 + Math.random() * 2.3, z = -1.1 + Math.random() * 2.2;
+      const y = yMin + Math.random() * (yMax - yMin);
+      if (insideAny(x, y, z)) return [x, y, z];
+    }
+  }
+
+  const waterRing = [main.rings[5], peak.rings[0]];
+  const shape = fromFunction(count, () => {
+    const k = Math.random();
+    if (k < 0.2) {
+      const p = onTri(pickTriUp); // tip faces
+      return [...p, lumAt(p[1], false)];
+    }
+    if (k < 0.29) {
+      const p = onEdge(pickEdgeUp); // tip edges
+      return [...p, lumAt(p[1], true)];
+    }
+    if (k < 0.52) {
+      const p = onTri(pickTriDown); // underwater faces
+      return [...p, lumAt(p[1], false)];
+    }
+    if (k < 0.6) {
+      const p = onEdge(pickEdgeDown); // underwater edges
+      return [...p, lumAt(p[1], true)];
+    }
+    if (k < 0.71) {
+      const p = inVolume(ICE_BOTTOM, -0.02); // the mass itself, faint
+      return [...p, 0.12 + Math.random() * 0.1];
+    }
+    if (k < 0.76) {
+      const y = ICE_STRATA[(Math.random() * ICE_STRATA.length) | 0] + (Math.random() - 0.5) * 0.01;
+      const p = inVolume(y, y);
+      return [...p, 0.3 + Math.random() * 0.1];
+    }
+    if (k < 0.8) {
+      // Where the ice meets the water: a bright line around the berg.
+      for (;;) {
+        const ring = waterRing[Math.random() < 0.75 ? 0 : 1];
+        const i = (Math.random() * ring.length) | 0;
+        const a = ring[i], b = ring[(i + 1) % ring.length], t = Math.random();
+        const x = a[0] + (b[0] - a[0]) * t, z = a[2] + (b[2] - a[2]) * t;
+        if (ring === waterRing[1] && inside(main, x, 0, z)) continue;
+        return [x, (Math.random() - 0.5) * 0.008, z, 0.85 + Math.random() * 0.15];
+      }
+    }
+    // The water surface: a disc of dust, densest near the berg.
+    for (;;) {
+      const r = ICE_WATER * Math.sqrt(Math.random());
+      const a = Math.random() * TAU;
+      const x = r * Math.cos(a), z = r * Math.sin(a);
+      if (insideAny(x, 0, z) || Math.random() > 1.15 - r / ICE_WATER) continue;
+      return [x, (Math.random() - 0.5) * 0.01, z, 0.12 + 0.3 * (1 - r / ICE_WATER) ** 2 + Math.random() * 0.05];
+    }
+  });
+  shape.fill = 0.45;
+  shape.spin = 0.1;
+  shape.fit = 0.9;
+  shape.loose = 0.5;
   return shape;
 }
 
@@ -103,41 +322,6 @@ function drawn(w, h, count, draw, opts) {
   const canvas = makeCanvas(w, h);
   draw(canvas.getContext("2d", { willReadFrequently: true }));
   return sampleCanvas(canvas, count, opts);
-}
-
-// "I find out what people actually need": two people talking.
-export function people(count) {
-  const shape = drawn(640, 420, count, (ctx) => {
-    for (const cx of [170, 470]) {
-      ctx.fillStyle = "#fff";
-      ctx.beginPath();
-      ctx.arc(cx, 180, 42, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "#cfcfcf";
-      ctx.beginPath();
-      ctx.roundRect(cx - 62, 236, 124, 184, [62, 62, 0, 0]);
-      ctx.fill();
-    }
-    // Speech bubble from the left person, with "..." inside.
-    ctx.strokeStyle = "#fff";
-    ctx.lineWidth = 10;
-    ctx.beginPath();
-    ctx.roundRect(240, 30, 160, 96, 30);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(280, 126);
-    ctx.lineTo(250, 160);
-    ctx.lineTo(310, 126);
-    ctx.stroke();
-    ctx.fillStyle = "#fff";
-    for (const x of [285, 320, 355]) {
-      ctx.beginPath();
-      ctx.arc(x, 78, 9, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }, { depth: 0.2 });
-  shape.fit = 0.58;
-  return shape;
 }
 
 // "and then I build it": an app window wireframe.
@@ -205,5 +389,47 @@ export function saturnV(count) {
     ctx.fill();
   }, { depth: 0.15 });
   shape.fit = 0.8;
+  return shape;
+}
+
+// The closing stop: the GitHub and LinkedIn marks, side by side. They are only
+// the picture; real links sit over them (see #closing-links in index.html,
+// which assumes GitHub fills the left 40% of the width and LinkedIn the right
+// 40%). LinkedIn's tile is dim and its "in" bright, so the letters float in
+// front of the tile.
+const GITHUB_MARK =
+  "M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z";
+const LINKEDIN_MARK =
+  "M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z";
+
+export function socials(count) {
+  const shape = drawn(1000, 400, count, (ctx) => {
+    ctx.save();
+    ctx.scale(25, 25);
+    ctx.fillStyle = "#d0d0d0";
+    ctx.fill(new Path2D(GITHUB_MARK));
+    ctx.restore();
+
+    const mark = new Path2D(LINKEDIN_MARK);
+    // The "in" is the holes in LinkedIn's path: cut the path out of a white
+    // square (inset so the corners stay inside the tile) to keep just the holes.
+    const letters = makeCanvas(400, 400);
+    const lctx = letters.getContext("2d");
+    lctx.scale(400 / 24, 400 / 24);
+    lctx.fillStyle = "#fff";
+    lctx.fillRect(2, 2, 20, 20); // inside the tile's rounded corners
+    lctx.globalCompositeOperation = "destination-out";
+    lctx.fill(mark);
+
+    ctx.save();
+    ctx.translate(600, 0);
+    ctx.scale(400 / 24, 400 / 24);
+    ctx.fillStyle = "#9a9a9a";
+    ctx.fill(mark);
+    ctx.restore();
+    ctx.drawImage(letters, 600, 0);
+  }, { depth: 0.2 });
+  shape.fit = matchMedia("(max-width: 640px)").matches ? 1 : 0.5; // phones need bigger tap targets
+  shape.loose = 0.4; // keep the marks readable
   return shape;
 }

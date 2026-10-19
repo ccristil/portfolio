@@ -2,8 +2,7 @@
 // Loaded by the page with import(); any throw here falls back to the plain hero.
 
 import { createParticleField } from "./particles.js";
-import { fromText } from "./shapes.js";
-import { globe, dust, people, decision, appWindow, saturnV } from "./story-shapes.js";
+import { globe, dust, iceberg, decision, appWindow, saturnV, socials } from "./story-shapes.js";
 import { stateAt, stopY, yForStage } from "./timeline.js";
 
 const root = document.documentElement;
@@ -13,18 +12,16 @@ const params = new URLSearchParams(location.search);
 
 if (!root.classList.contains("has-particles")) throw new Error("WebGL unavailable");
 
-await document.fonts.load('700 160px "Inter"');
+await document.fonts.load('400 160px "Instrument Serif"');
 const SHAPES = {
   globe: globe(COUNT),
   dust: dust(COUNT),
-  people: people(COUNT),
+  iceberg: iceberg(COUNT),
   decision: decision(COUNT),
   app: appWindow(COUNT),
   rocket: saturnV(COUNT),
-  name: fromText("CRISTIAN CRUZ", COUNT),
+  socials: socials(COUNT),
 };
-// Letters need to stay readable, so the name wanders less than the rest.
-SHAPES.name.loose = 0.4;
 const NAMES = Object.keys(SHAPES);
 
 // The story, top to bottom: [element, which part meets mid-screen, shape].
@@ -33,7 +30,7 @@ const NAMES = Object.keys(SHAPES);
 // Stops must be in page order.
 const STOPS = [
   ["#hero", "center", "globe"],
-  ["#interlude-need", "center", "people"],
+  ["#interlude-need", "center", "iceberg"],
   ["#portfolio", "start", "dust"],
   ["#portfolio", "end", "dust"],
   // The funnel forms 28% of the way in, then you fly down it until 72%
@@ -48,7 +45,7 @@ const STOPS = [
   ["#interlude-properly", "center", "rocket"],
   ["#get-to-know-me", "start", "dust"],
   ["#get-to-know-me", "end", "dust"],
-  ["#interlude-closing", "center", "name"],
+  ["#interlude-closing", "center", "socials"],
 ];
 
 // Fail loudly (and fall back to the plain hero) on a typo rather than
@@ -122,12 +119,35 @@ try {
     scrollTo({ top: yForStage(stops, parseFloat(params.get("stage"))), behavior: "instant" });
   }
 
+  // Real links sit over the GitHub and LinkedIn particles at the closing stop.
+  // They're sized to the shape, and only live once the marks have formed.
+  const links = document.getElementById("closing-links");
+  const SOCIALS = NAMES.indexOf("socials");
+  let overLink = false;
+  function sizeLinks() {
+    const { w, h } = field.screenBox(SOCIALS);
+    links.style.width = `${w}px`;
+    links.style.height = `${h}px`;
+  }
+  if (links) {
+    sizeLinks();
+    addEventListener("resize", sizeLinks);
+    links.addEventListener("pointerover", (e) => (overLink = !!e.target.closest("a")));
+    links.addEventListener("pointerleave", () => (overLink = false));
+  }
+
   let y = scrollY;
   (function loop() {
     if (stopped) return;
     y += (scrollY - y) * (reducedMotion ? 1 : 0.025);
     const { from, to, t } = stateAt(stops, y);
     field.setState(from, to, t, travelAt(y));
+    if (links) {
+      links.classList.toggle("is-live", to === SOCIALS && (from === to || t > 0.9));
+      // The cursor parts the particles, which would make a link flinch away.
+      const radius = field.uniforms.uMouseRadius;
+      radius.value += ((overLink ? 0.08 : 0.7) - radius.value) * 0.15;
+    }
     requestAnimationFrame(loop);
   })();
 
