@@ -300,10 +300,10 @@ export function createParticleField({
   }
 
   // Show the morph from shape `from` to shape `to`, t in 0…1.
-  // Each shape is held still for the first and last 20% of t.
+  // Each shape is held still for the first and last 8% of t.
   function setState(from, to, t) {
     if (loaded !== `${from}>${to}`) load(from, to);
-    uniforms.uMorph.value = from === to ? 0 : smoothstep(0.2, 0.8, t);
+    uniforms.uMorph.value = from === to ? 0 : smoothstep(0.08, 0.92, t);
     uniforms.uScaleA.value = shapeScales[from];
     uniforms.uScaleB.value = shapeScales[to];
     uniforms.uExposureA.value = shapeExposures[from];

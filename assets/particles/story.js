@@ -107,7 +107,7 @@ try {
   let y = scrollY;
   (function loop() {
     if (stopped) return;
-    y += (scrollY - y) * (reducedMotion ? 1 : 0.1);
+    y += (scrollY - y) * (reducedMotion ? 1 : 0.025);
     const { from, to, t } = stateAt(stops, y);
     field.setState(from, to, t);
     requestAnimationFrame(loop);
