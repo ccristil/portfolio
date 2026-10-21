@@ -162,8 +162,9 @@ export function presenceOf({ from, to, t }, index) {
 // The berg's widest reach from its turning axis at evenly spaced heights,
 // measured from its actual points, so it covers every angle the berg turns
 // through. The water surface (y ≈ 0) is left out, or it would swallow the
-// waterline. Returns { y0, y1, radii }.
-export function bergProfile({ positions, frame: { cx, cy, s } }, bands = 16) {
+// waterline. So are any points the shape marks in `outlineSkip` (a berg's
+// floating bits, say). Returns { y0, y1, radii }.
+export function bergProfile({ positions, frame: { cx, cy, s }, outlineSkip }, bands = 16) {
   let y0 = Infinity, y1 = -Infinity;
   for (let i = 1; i < positions.length; i += 3) {
     const y = positions[i] / s + cy;
@@ -173,7 +174,7 @@ export function bergProfile({ positions, frame: { cx, cy, s } }, bands = 16) {
   const radii = new Float32Array(bands);
   for (let i = 0; i < positions.length; i += 3) {
     const y = positions[i + 1] / s + cy;
-    if (Math.abs(y) < 0.012) continue;
+    if (Math.abs(y) < 0.012 || outlineSkip?.[i / 3]) continue;
     const j = Math.round(((y - y0) / (y1 - y0)) * (bands - 1));
     const r = Math.hypot(positions[i] / s, positions[i + 2] / s); // x - cx, z
     if (r > radii[j]) radii[j] = r;

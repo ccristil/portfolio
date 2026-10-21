@@ -3,6 +3,7 @@
      Not linked from anywhere. Serve the repo root and open /dev/orcas.html.
      URL options: ?orcas=T starts the pod clock at T seconds, freeze=1 stops
      it, hud=0 hides the panel, reduced=1 previews reduced motion,
+     berg=real swaps in the more realistic iceberg (icebergReal),
      inspect=1 hides the berg and lines the pod up close (yaw=radians turns
      them, so you can check the model from any side). -->
 <html lang="en" class="has-particles">
@@ -99,11 +100,12 @@
       <button id="pass2">Skip to pass 2</button>
       <button id="away">Scroll away</button>
       <button id="fast" aria-pressed="false">3× speed</button>
+      <button id="bergswap">Realistic berg</button>
     </div>
 
     <script type="module">
       import { createParticleField } from "../assets/particles/particles.js";
-      import { iceberg, dust } from "../assets/particles/story-shapes.js";
+      import { iceberg, icebergReal, dust } from "../assets/particles/story-shapes.js";
       import { createOrcaLayer } from "../assets/particles/orcas.js";
       import { presenceOf, LEAD_IN, CROSSING, BANK, POD, SPINE } from "../assets/particles/orca-pod.js";
 
@@ -114,7 +116,14 @@
       const COUNT = mobile ? 18000 : 40000;
       const BERG = 0, DUST = 1;
 
-      const berg = iceberg(COUNT);
+      const realBerg = params.get("berg") === "real";
+      const berg = (realBerg ? icebergReal : iceberg)(COUNT);
+      const swapBtn = document.getElementById("bergswap");
+      swapBtn.textContent = realBerg ? "Stylised berg" : "Realistic berg";
+      swapBtn.onclick = () => {
+        realBerg ? params.delete("berg") : params.set("berg", "real");
+        location.search = params.toString();
+      };
       const inspect = params.get("inspect") === "1";
       if (inspect) berg.opacity = 0;
       const field = createParticleField({
