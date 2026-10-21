@@ -1,0 +1,315 @@
+<!doctype html>
+<!-- Coyote engine prototype: the "and then I build it" engine on its own,
+     assembling from an exploded view (stage 2, see engine-build.js).
+     Not linked from anywhere. Serve the repo root and open /dev/engine.html.
+     Points come from dev/engine-data/coyote.bin, built from the CAD reference
+     outside the repo (both are git-excluded locally, not committed).
+     URL options: build=0–1 holds the build at that point (0 exploded,
+     1 assembled) instead of playing it, spread=… scales the exploded distances,
+     yaw=degrees and tilt=degrees set the view, spin=1 turns it on a turntable (it holds still by default),
+     back=0–1 sets how bright back faces stay, normals=0 turns the back-face
+     dimming off, hud=0 hides the panel, reduced=1 previews reduced motion. -->
+<html lang="en" class="has-particles">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Engine prototype</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Instrument+Serif&display=swap"
+      rel="stylesheet"
+    />
+    <script type="importmap">
+      { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js" } }
+    </script>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #030712;
+        color: #f3f4f6;
+        font-family: Inter, system-ui, sans-serif;
+        overflow: hidden;
+      }
+      #particles {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      /* Same look and place as .interlude__caption on the live page. */
+      .caption {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 14vh;
+        margin: 0 auto;
+        max-width: 22ch;
+        padding: 0 16px;
+        text-align: center;
+        font-family: "Instrument Serif", Georgia, serif;
+        font-size: clamp(1.75rem, 4vw, 3rem);
+        letter-spacing: -0.02em;
+        line-height: 1.15;
+        color: #fff;
+        text-shadow: 0 2px 24px rgba(3, 7, 18, 0.9);
+        pointer-events: none;
+      }
+      .hud {
+        position: fixed;
+        left: 16px;
+        top: 16px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 14px;
+        align-items: center;
+        max-width: calc(100% - 32px);
+        font-size: 13px;
+      }
+      .hud[hidden] {
+        display: none;
+      }
+      .hud label {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .hud output {
+        font-variant-numeric: tabular-nums;
+        min-width: 4ch;
+        color: #d8b4fe;
+      }
+      .hud button {
+        font: inherit;
+        color: #f3f4f6;
+        background: rgba(76, 29, 149, 0.35);
+        border: 1px solid rgba(216, 180, 254, 0.35);
+        border-radius: 6px;
+        padding: 6px 10px;
+        cursor: pointer;
+      }
+      .hud button:hover {
+        background: rgba(76, 29, 149, 0.6);
+      }
+      .hud button[aria-pressed="true"] {
+        background: #6d28d9;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="particles" aria-hidden="true"></canvas>
+    <p class="caption">and then I build it.</p>
+    <div class="hud" id="hud">
+      <button id="play" aria-pressed="true">Play build</button>
+      <label>Build <input id="build" type="range" min="0" max="1" step="0.001" /><output id="buildOut"></output></label>
+      <label>Spread <input id="spread" type="range" min="0.2" max="1.2" step="0.01" /><output id="spreadOut"></output></label>
+      <label>Yaw <input id="yaw" type="range" min="-180" max="180" step="1" /><output id="yawOut"></output></label>
+      <label>Tilt <input id="tilt" type="range" min="-10" max="45" step="1" /><output id="tiltOut"></output></label>
+      <label>Back faces <input id="back" type="range" min="0" max="1" step="0.01" /><output id="backOut"></output></label>
+      <button id="spin" aria-pressed="false">Spin</button>
+      <button id="normals" aria-pressed="true">Normals</button>
+      <button id="away">Scroll away</button>
+    </div>
+
+    <script type="module">
+      import { createParticleField } from "../assets/particles/particles.js";
+      import { dust } from "../assets/particles/story-shapes.js";
+      import { createBuild } from "./engine-build.js";
+
+      const params = new URLSearchParams(location.search);
+      const mobile = matchMedia("(max-width: 640px)").matches;
+      const reducedMotion =
+        params.get("reduced") === "1" || matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const COUNT = mobile ? 18000 : 40000;
+      const ENGINE = 0, DUST = 1;
+
+      // See dev/engine-data/tools/export.py for the layout.
+      async function coyote(count) {
+        const [buf, meta] = await Promise.all([
+          fetch("engine-data/coyote.bin").then((r) => r.arrayBuffer()),
+          fetch("engine-data/coyote.json").then((r) => r.json()),
+        ]);
+        const n = new DataView(buf).getUint32(0, true);
+        const pos = new Int16Array(buf, 4, n * 3);
+        const nrm = new Int8Array(buf, 4 + n * 6, n * 3);
+        const lum8 = new Uint8Array(buf, 4 + n * 9, n);
+        const part8 = new Uint8Array(buf, 4 + n * 10, n);
+        const partner16 = new Uint16Array(buf, 4 + n * 11, n);
+        const positions = new Float32Array(count * 3);
+        const normals = new Float32Array(count * 3);
+        const lum = new Float32Array(count);
+        const parts = new Uint8Array(count);
+        const hidden = new Uint8Array(count);
+        const partner = new Int32Array(count).fill(-1);
+        for (let i = 0; i < count; i++) {
+          const k = i % n; // points are shuffled, so a prefix is a fair sample
+          for (let a = 0; a < 3; a++) {
+            positions[i * 3 + a] = pos[k * 3 + a] / 32767;
+            normals[i * 3 + a] = nrm[k * 3 + a] / 127;
+          }
+          lum[i] = lum8[k] / 255;
+          parts[i] = part8[k] & 127;
+          hidden[i] = part8[k] >> 7;
+          // Phones load a prefix, so a partner past it is dropped (the build
+          // then picks one of the same part).
+          if (partner16[k] !== 65535 && partner16[k] < count && k === i) partner[i] = partner16[k];
+        }
+        return {
+          shape: { positions, normals, lum, aspect: { w: 1, h: 1 }, fill: 0.5, spin: 0.1, tilt: 0, fit: 0.9, loose: 0.3 },
+          source: { positions: positions.slice(), normals: normals.slice(), lum: lum.slice(), parts, hidden, partner },
+          mmToUnit: meta.mmToUnit,
+        };
+      }
+
+      const { shape: engine, source, mmToUnit } = await coyote(COUNT);
+      const realNormals = engine.normals;
+      const field = createParticleField({
+        canvas: document.getElementById("particles"),
+        count: COUNT,
+        shapes: [engine, dust(COUNT)],
+        colors: { lo: "#4c1d95", hi: "#d8b4fe" },
+        reducedMotion,
+      });
+      field.uniforms.uBirth.value = 1;
+      if (params.get("hud") === "0") document.getElementById("hud").hidden = true;
+      const $ = (id) => document.getElementById(id);
+
+      let state = { from: ENGINE, to: ENGINE, t: 0 };
+      let build = parseFloat(params.get("build") ?? "1"); // 0 exploded … 1 assembled
+      let spread = 0.7;
+
+      // Yaw is baked into the points (it's just where the turntable starts);
+      // tilt is the shape's own setting, applied in the shader after the spin.
+      let yaw = 0;
+      let view = null; // { positions, apply } for the current yaw
+      function turnY(x, y, z) {
+        const c = Math.cos(yaw), s = Math.sin(yaw);
+        return [c * x + s * z, y, -s * x + c * z];
+      }
+      function applyView() {
+        const positions = new Float32Array(source.positions.length);
+        for (let i = 0; i < positions.length; i += 3) {
+          positions.set(turnY(source.positions[i], source.positions[i + 1], source.positions[i + 2]), i);
+          realNormals.set(turnY(source.normals[i], source.normals[i + 1], source.normals[i + 2]), i);
+        }
+        view = { apply: createBuild({ ...source, positions }, mmToUnit, turnY) };
+        // Measure the finished engine for the fit; the build keeps the
+        // exploded one inside the same box.
+        const ct = Math.cos(engine.tilt), st = Math.sin(engine.tilt);
+        let w = 0, h = 0;
+        for (let i = 0; i < positions.length; i += 3) {
+          w = Math.max(w, Math.abs(positions[i]) * 2);
+          h = Math.max(h, Math.abs(ct * positions[i + 1] - st * positions[i + 2]) * 2);
+        }
+        engine.aspect = { w, h };
+        dispatchEvent(new Event("resize")); // recomputes the shape scales
+        dirty = true;
+      }
+
+      // Push the engine's current points to whichever GPU slots hold it.
+      const attrs = field.scene.children[0].geometry.attributes;
+      let dirty = true;
+      function upload() {
+        view.apply(build, spread, engine);
+        field.setState(state.from, state.to, state.t);
+        for (const [slot, idx] of [["A", state.from], ["B", state.to]]) {
+          if (idx !== ENGINE) continue;
+          attrs[`aPos${slot}`].array.set(engine.positions);
+          attrs[`aLum${slot}`].array.set(engine.lum);
+          attrs[`aNrm${slot}`].array.set(engine.normals ?? new Float32Array(COUNT * 3));
+          attrs[`aPos${slot}`].needsUpdate = attrs[`aLum${slot}`].needsUpdate = attrs[`aNrm${slot}`].needsUpdate = true;
+        }
+        dirty = false;
+      }
+
+      function bind(id, initial, apply, fmt) {
+        const input = $(id), out = $(id + "Out");
+        input.value = initial;
+        const update = () => {
+          apply(parseFloat(input.value));
+          out.value = fmt(parseFloat(input.value));
+        };
+        input.oninput = update;
+        update();
+        return (v) => ((input.value = v), (out.value = fmt(v)));
+      }
+      const deg = (v) => `${v}°`;
+      bind("yaw", params.get("yaw") ?? -37, (v) => ((yaw = (v * Math.PI) / 180), applyView()), deg);
+      bind("tilt", params.get("tilt") ?? 28, (v) => ((engine.tilt = (v * Math.PI) / 180), applyView()), deg);
+      bind("back", params.get("back") ?? 1, (v) => (field.uniforms.uBack.value = v), (v) => v.toFixed(2));
+      bind("spread", params.get("spread") ?? 0.7, (v) => ((spread = v), (dirty = true)), (v) => v.toFixed(2));
+      const showBuild = bind("build", build, (v) => ((build = v), (dirty = true)), (v) => v.toFixed(2));
+
+      // Play: hold exploded, assemble, hold, come apart, repeat.
+      const LOOP = [[1.2, 0, 0], [3, 0, 1], [2.5, 1, 1], [3, 1, 0]]; // [seconds, from, to]
+      const loopLength = LOOP.reduce((s, [d]) => s + d, 0);
+      let playing = params.get("play") !== "0" && !params.has("build");
+      let playStart = performance.now();
+      const playBtn = $("play");
+      function setPlay(on) {
+        if (on && !playing) playStart = performance.now() - LOOP[0][0] * 1000;
+        playing = on;
+        playBtn.setAttribute("aria-pressed", String(on));
+      }
+      setPlay(playing);
+      playBtn.onclick = () => setPlay(!playing);
+      $("build").addEventListener("input", () => setPlay(false)); // scrubbing pauses
+      function buildAt(seconds) {
+        let t = seconds % loopLength;
+        for (const [d, from, to] of LOOP) {
+          if (t < d) return from + (to - from) * (t / d);
+          t -= d;
+        }
+        return 1;
+      }
+
+      const spinBtn = $("spin");
+      function setSpin(on) {
+        engine.spin = on ? 0.1 : 0;
+        spinBtn.setAttribute("aria-pressed", String(on));
+      }
+      setSpin(params.get("spin") === "1");
+      spinBtn.onclick = () => setSpin(spinBtn.getAttribute("aria-pressed") !== "true");
+
+      const normalsBtn = $("normals");
+      function setNormals(on) {
+        normalsBtn.setAttribute("aria-pressed", String(on));
+        engine.normals = on ? realNormals : undefined;
+        dirty = true;
+      }
+      setNormals(params.get("normals") !== "0");
+      normalsBtn.onclick = () => setNormals(normalsBtn.getAttribute("aria-pressed") !== "true");
+
+      // Stands in for scrolling: morph to dust and back.
+      let morph = null; // { from, to, start }
+      const MORPH_MS = 2500;
+      const awayBtn = $("away");
+      awayBtn.onclick = () => {
+        const gone = state.to === DUST;
+        morph = { from: gone ? DUST : ENGINE, to: gone ? ENGINE : DUST, start: performance.now() };
+        awayBtn.textContent = gone ? "Scroll away" : "Scroll back";
+      };
+
+      (function loop() {
+        const before = `${state.from}>${state.to}`;
+        if (morph) {
+          const t = Math.min(1, (performance.now() - morph.start) / MORPH_MS);
+          state = t < 1 ? { from: morph.from, to: morph.to, t } : { from: morph.to, to: morph.to, t: 0 };
+          if (t >= 1) morph = null;
+        }
+        if (playing) {
+          build = buildAt((performance.now() - playStart) / 1000);
+          showBuild(build);
+          dirty = true;
+        }
+        // A pair change re-uploads the stock shape, so overwrite it too.
+        if (dirty || before !== `${state.from}>${state.to}`) upload();
+        else field.setState(state.from, state.to, state.t);
+        requestAnimationFrame(loop);
+      })();
+    </script>
+  </body>
+</html>
