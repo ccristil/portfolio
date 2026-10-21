@@ -9,9 +9,16 @@
 //   fit      number (default 1) to shrink it, or "cover" to fill the viewport
 //   opacity  0–1 (default 1)
 //   spin     radians per second around the vertical axis (default 0)
+//   tilt     radians it leans its top towards the camera, after spinning, so
+//            a turntable can be seen from above (default 0)
 //   loose    how far its particles wander at rest (default 1; 0 = still)
 //   flyTo    shape-space z the camera flies to; makes it a fly-through shape
 //            that setState's `travel` (0–1) slides toward the camera
+//   still    true to hold it still: no slow sway (the cursor still parts it)
+//   normals  Float32Array(count * 3), the way each point's surface faces.
+//            Points facing away from the camera dim to `uBack`, so a solid
+//            object doesn't show its far side through its near side.
+//   back     0–1, this shape's own brightness for those (default uBack)
 //
 // Throws if WebGL is unavailable. Callers should catch and fall back.
 
@@ -84,6 +91,8 @@ const vertexShader = /* glsl */ `
   attribute vec3 aPosB;
   attribute float aLumA;
   attribute float aLumB;
+  attribute vec3 aNrmA;
+  attribute vec3 aNrmB;
   attribute vec4 aRand;
 
   uniform float uMorph;
@@ -95,6 +104,8 @@ const vertexShader = /* glsl */ `
   uniform float uOpacityB;
   uniform float uSpinA;
   uniform float uSpinB;
+  uniform float uTiltA;
+  uniform float uTiltB;
   uniform float uLoose;
   uniform float uLooseA;
   uniform float uLooseB;
@@ -102,11 +113,15 @@ const vertexShader = /* glsl */ `
   uniform float uFlyB;
   uniform float uCalmA;
   uniform float uCalmB;
+  uniform float uStillA;
+  uniform float uStillB;
   uniform float uCrossfade;
   uniform float uScatter;
   uniform float uBirth;
   uniform float uTime;
   uniform float uAmbient;
+  uniform float uBackA;
+  uniform float uBackB;
   uniform vec3 uMouse;
   uniform float uMouseStrength;
   uniform float uMouseRadius;
@@ -122,6 +137,10 @@ ${noiseChunk}
     float c = cos(a), s = sin(a);
     return vec3(c * p.x + s * p.z, p.y, -s * p.x + c * p.z);
   }
+  vec3 tiltX(vec3 p, float a) {
+    float c = cos(a), s = sin(a);
+    return vec3(p.x, c * p.y - s * p.z, s * p.y + c * p.z);
+  }
 
   void main() {
     // Each particle leaves on its own schedule, so shapes dissolve and
@@ -132,8 +151,12 @@ ${noiseChunk}
     float tp = mix(t, step(0.5, uMorph), uCrossfade);
     float flight = sin(3.14159 * t) * (1.0 - uCrossfade);
 
-    vec3 a = spinY(aPosA, uTime * uSpinA * uAmbient) * uScaleA;
-    vec3 b = spinY(aPosB, uTime * uSpinB * uAmbient) * uScaleB;
+    float spinA = uTime * uSpinA * uAmbient;
+    float spinB = uTime * uSpinB * uAmbient;
+    vec3 a = tiltX(spinY(aPosA, spinA), uTiltA) * uScaleA;
+    vec3 b = tiltX(spinY(aPosB, spinB), uTiltB) * uScaleB;
+    // Shapes without normals have zero ones, which turns the dimming off.
+    vec3 n = mix(tiltX(spinY(aNrmA, spinA), uTiltA), tiltX(spinY(aNrmB, spinB), uTiltB), tp);
     // Fly-through shapes slide toward the camera as you scroll through them.
     a.z += uFlyA;
     b.z += uFlyB;
@@ -152,9 +175,11 @@ ${noiseChunk}
     float wander = 0.035 * uLoose * mix(uLooseA, uLooseB, tp) * (0.5 + aRand.y) * stray;
     p += uAmbient * wander * drift(p * 1.2 + vec3(0.0, 0.0, uTime * 0.15) + aRand.xyz * 0.35);
     // A slow sway that shows off the depth.
-    float ang = sin(uTime * 0.25) * 0.22 * uAmbient * (1.0 - calm);
+    float still = max(calm, mix(uStillA, uStillB, tp));
+    float ang = sin(uTime * 0.25) * 0.22 * uAmbient * (1.0 - still);
     float c = cos(ang), s = sin(ang);
     p.xz = mat2(c, s, -s, c) * p.xz;
+    n.xz = mat2(c, s, -s, c) * n.xz;
 
     // Birth: particles converge from a wide shell on page load.
     float born = clamp((uBirth - aRand.z * 0.45) / 0.55, 0.0, 1.0);
@@ -173,6 +198,10 @@ ${noiseChunk}
     // far plane) once faded; otherwise the size falloff below would blow them
     // up into huge blobs.
     float nearFade = smoothstep(0.6, 1.8, -mv.z);
+    // Back-facing points dim (fake occlusion). The weight eases the dimming
+    // in and out while morphing to or from a shape without normals.
+    float facing = dot(normalize(normalMatrix * n + 1e-6), normalize(-mv.xyz));
+    float face = mix(1.0, mix(mix(uBackA, uBackB, tp), 1.0, smoothstep(-0.25, 0.35, facing)), min(1.0, length(n)));
 
     vLum = mix(aLumA, aLumB, tp);
     vSpark = step(0.985, aRand.y) * (0.5 + 0.5 * sin(uTime * 3.0 * uAmbient + aRand.x * 40.0));
@@ -180,7 +209,7 @@ ${noiseChunk}
     float dip = mix(1.0, abs(1.0 - 2.0 * uMorph), uCrossfade);
     // Exposure lifts toward 1 mid-flight, when the cloud is spread out.
     vExposure = mix(mix(uExposureA, uExposureB, tp), 1.0, flight * 0.6)
-      * mix(uOpacityA, uOpacityB, tp) * dip * nearFade;
+      * mix(uOpacityA, uOpacityB, tp) * dip * nearFade * face;
     gl_PointSize = uSize * uPixelRatio * (0.55 + vLum * 0.8 + vSpark * 1.6) * (6.0 / -mv.z);
     if (nearFade <= 0.0) {
       gl_PointSize = 0.0;
@@ -238,12 +267,17 @@ export function createParticleField({
   const posB = new THREE.BufferAttribute(new Float32Array(count * 3), 3);
   const lumA = new THREE.BufferAttribute(new Float32Array(count), 1);
   const lumB = new THREE.BufferAttribute(new Float32Array(count), 1);
+  const nrmA = new THREE.BufferAttribute(new Float32Array(count * 3), 3);
+  const nrmB = new THREE.BufferAttribute(new Float32Array(count * 3), 3);
+  const noNormals = new Float32Array(count * 3);
   const rand = new Float32Array(count * 4).map(Math.random);
   geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(count * 3), 3));
   geometry.setAttribute("aPosA", posA);
   geometry.setAttribute("aPosB", posB);
   geometry.setAttribute("aLumA", lumA);
   geometry.setAttribute("aLumB", lumB);
+  geometry.setAttribute("aNrmA", nrmA);
+  geometry.setAttribute("aNrmB", nrmB);
   geometry.setAttribute("aRand", new THREE.BufferAttribute(rand, 4));
 
   const uniforms = {
@@ -256,6 +290,8 @@ export function createParticleField({
     uOpacityB: { value: 1 },
     uSpinA: { value: 0 },
     uSpinB: { value: 0 },
+    uTiltA: { value: 0 },
+    uTiltB: { value: 0 },
     uLoose: { value: looseness },
     uLooseA: { value: 1 },
     uLooseB: { value: 1 },
@@ -263,11 +299,16 @@ export function createParticleField({
     uFlyB: { value: 0 },
     uCalmA: { value: 0 },
     uCalmB: { value: 0 },
+    uStillA: { value: 0 },
+    uStillB: { value: 0 },
     uCrossfade: { value: reducedMotion ? 1 : 0 },
     uScatter: { value: reducedMotion ? 0 : 0.55 },
     uBirth: { value: reducedMotion ? 1 : 0 },
     uTime: { value: 0 },
     uAmbient: { value: reducedMotion ? 0 : 1 },
+    uBack: { value: 0.12 }, // the default; a shape's own `back` overrides it
+    uBackA: { value: 0.12 },
+    uBackB: { value: 0.12 },
     uMouse: { value: new THREE.Vector3(999, 999, 0) },
     uMouseStrength: { value: 0 },
     uMouseRadius: { value: 0.7 },
@@ -324,8 +365,27 @@ export function createParticleField({
     posB.array.set(shapes[to].positions);
     lumA.array.set(shapes[from].lum);
     lumB.array.set(shapes[to].lum);
+    nrmA.array.set(shapes[from].normals ?? noNormals);
+    nrmB.array.set(shapes[to].normals ?? noNormals);
     posA.needsUpdate = posB.needsUpdate = lumA.needsUpdate = lumB.needsUpdate = true;
+    nrmA.needsUpdate = nrmB.needsUpdate = true;
     loaded = `${from}>${to}`;
+  }
+
+  // For a shape whose points move every frame: the caller edits its arrays
+  // in place, then this pushes them to whichever GPU slots hold that shape
+  // right now (if any). keys: which of "positions", "normals", "lum".
+  function refreshShape(i, keys = ["positions"]) {
+    if (!loaded) return;
+    const [from, to] = loaded.split(">").map(Number);
+    const slots = [];
+    if (from === i) slots.push({ pos: posA, nrm: nrmA, lum: lumA });
+    if (to === i) slots.push({ pos: posB, nrm: nrmB, lum: lumB });
+    for (const slot of slots) {
+      if (keys.includes("positions")) slot.pos.array.set(shapes[i].positions), (slot.pos.needsUpdate = true);
+      if (keys.includes("normals")) slot.nrm.array.set(shapes[i].normals ?? noNormals), (slot.nrm.needsUpdate = true);
+      if (keys.includes("lum")) slot.lum.array.set(shapes[i].lum), (slot.lum.needsUpdate = true);
+    }
   }
 
   // A fly-through shape's flight ends with its `flyTo` depth this far in
@@ -351,12 +411,18 @@ export function createParticleField({
     uniforms.uOpacityB.value = shapes[to].opacity ?? 1;
     uniforms.uSpinA.value = shapes[from].spin ?? 0;
     uniforms.uSpinB.value = shapes[to].spin ?? 0;
+    uniforms.uTiltA.value = shapes[from].tilt ?? 0;
+    uniforms.uTiltB.value = shapes[to].tilt ?? 0;
     uniforms.uLooseA.value = shapes[from].loose ?? 1;
     uniforms.uLooseB.value = shapes[to].loose ?? 1;
     uniforms.uFlyA.value = flyOffset(from, travel);
     uniforms.uFlyB.value = flyOffset(to, travel);
     uniforms.uCalmA.value = shapes[from].flyTo == null ? 0 : 1;
     uniforms.uCalmB.value = shapes[to].flyTo == null ? 0 : 1;
+    uniforms.uBackA.value = shapes[from].back ?? uniforms.uBack.value;
+    uniforms.uBackB.value = shapes[to].back ?? uniforms.uBack.value;
+    uniforms.uStillA.value = shapes[from].still ? 1 : 0;
+    uniforms.uStillB.value = shapes[to].still ? 1 : 0;
   }
 
   // How big shape i is on screen at rest, in CSS px. It sits centered on the
@@ -422,6 +488,10 @@ export function createParticleField({
     setState,
     setProgress,
     screenBox,
+    refreshShape,
+    // Re-measures every shape's size on screen, after a shape's aspect, fit
+    // or fill changes.
+    refit: computeScales,
     uniforms,
     // For extra layers drawn in the same scene (orcas.js).
     scene,
