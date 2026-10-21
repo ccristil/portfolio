@@ -6,6 +6,7 @@ import { globe, dust, iceberg, decision, appWindow, saturnV, socials } from "./s
 import { stateAt, stopY, yForStage } from "./timeline.js";
 import { createOrcaLayer } from "./orcas.js";
 import { presenceOf } from "./orca-pod.js";
+import { loadMustangScene } from "./mustang-scene.js";
 
 const root = document.documentElement;
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -21,7 +22,9 @@ const SHAPES = {
   dust: dust(COUNT),
   iceberg: iceberg(COUNT),
   decision: decision(COUNT),
-  app: appWindow(COUNT),
+  // "and then I build it.": the Mustang scene (mustang-scene.js) once it
+  // has loaded; the app window until then, or if it can't load.
+  build: appWindow(COUNT),
   rocket: saturnV(COUNT),
   socials: socials(COUNT),
 };
@@ -42,7 +45,7 @@ const STOPS = [
   ["#interlude-decide", 0.72, "decision"],
   ["#skills", "start", "dust"],
   ["#skills", "end", "dust"],
-  ["#interlude-build", "center", "app"],
+  ["#interlude-build", "center", "build"],
   ["#experience", "start", "dust"],
   ["#education", "end", "dust"],
   ["#interlude-properly", "center", "rocket"],
@@ -62,11 +65,13 @@ for (const [sel, at, shape] of STOPS) {
 
 const canvas = document.getElementById("particles");
 let field;
+// The field keeps this array, so a shape can be swapped in later (the Mustang).
+const fieldShapes = NAMES.map((n) => SHAPES[n]);
 try {
   field = createParticleField({
     canvas,
     count: COUNT,
-    shapes: NAMES.map((n) => SHAPES[n]),
+    shapes: fieldShapes,
     colors: { lo: "#4c1d95", hi: "#d8b4fe" },
     reducedMotion,
   });
@@ -85,6 +90,34 @@ try {
   } catch (err) {
     console.warn("orcas unavailable:", err);
   }
+
+  // The Mustang for "and then I build it.". It loads in the background and
+  // takes the app window's place when it's ready. It's an extra: if it
+  // fails, the app window stays.
+  // The engine it drops in: the scene's stand-in V8 for now. The Coyote and
+  // its build (coyote-engine.js, engine-build.js and coyote.bin/json from
+  // the engine work) aren't published yet; once they're in assets/particles/
+  // (and its data/), pass engine: coyote below.
+  const BUILD = NAMES.indexOf("build");
+  let mustang = null;
+  const coyote = async (options) => {
+    const { coyoteEngine, coyoteEngineBuild } = await import("./coyote-engine.js");
+    const base = "assets/particles/data/";
+    const build = await coyoteEngineBuild({ ...options, base });
+    const extra = await coyoteEngine({ ...options, base, build });
+    return { build, extra };
+  };
+  loadMustangScene({ count: COUNT, mobile, reducedMotion, data: "assets/particles/data/", engine: null })
+    .then((scene) => {
+      if (stopped) return;
+      fieldShapes[BUILD] = scene.shape;
+      scene.attach(field, BUILD);
+      // ?mustang=seconds plays it to that moment and holds it, for screenshots.
+      if (params.has("mustang")) scene.holdAt(parseFloat(params.get("mustang")));
+      field.refreshShape(BUILD, ["positions", "normals", "lum"]);
+      mustang = scene;
+    })
+    .catch((err) => console.warn("Mustang unavailable:", err));
 
   let stops = [];
   let flySpan = null; // [startY, endY] of the scroll span you fly through the funnel
@@ -151,11 +184,24 @@ try {
   }
 
   let y = scrollY;
+  let last = performance.now();
   (function loop() {
     if (stopped) return;
+    const now = performance.now(), dt = Math.min(0.1, (now - last) / 1000);
+    last = now;
     y += (scrollY - y) * (reducedMotion ? 1 : 0.025);
     const { from, to, t } = stateAt(stops, y);
     field.setState(from, to, t, travelAt(y));
+    if (mustang) {
+      try {
+        const held = params.has("mustang");
+        if (!held) mustang.autoplay({ from, to, t });
+        mustang.frame(dt, { from, to, t }, { hold: held });
+      } catch (err) {
+        console.warn("Mustang stopped:", err);
+        mustang = null;
+      }
+    }
     if (orcas) {
       try {
         orcas.update(presenceOf({ from, to, t }, ICEBERG));
