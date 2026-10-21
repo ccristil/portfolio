@@ -1,0 +1,313 @@
+<!doctype html>
+<!-- Mustang prototype: the car for the "and then I build it" interlude, on its own.
+     Not linked from anywhere. Serve the repo root and open /dev/mustang.html.
+     Points come from assets/particles/data/mustang.bin, built from
+     dev/ford_mustang_roush_2019_-_stage_3.glb by the scripts in
+     dev/mustang-data/tools (sample.py, then export.py); mustang.json beside
+     it holds the hinge and axles. The motion is assets/particles/mustang-rig.js,
+     the sequence and view assets/particles/mustang-scene.js (shared with the
+     live story); this page adds controls.
+     Model: "Ford Mustang ROUSH 2019 - Stage 3" by monsefzz on Sketchfab,
+     CC-BY-4.0, so going live needs a credit line.
+     Play (or P, or play=1) runs the whole thing: the Coyote comes together
+     (dev/coyote-engine.js), the chain takes it, the view pulls back, it
+     drops in, the hood shuts, it starts, does a donut in its
+     own tyre smoke, drives one lap and parks back on its spot, still running
+     (drive=plain drives straight off instead; Drive off and Donut run
+     either alone).
+     URL options: play=1 plays it on load, at=seconds plays it to that moment
+     and holds there; engine=build plays just the build and drop (E), engine=drop
+     just the drop, engine=in starts with the engine fitted; hood=open,
+     hood=degrees or hood=cycle (H toggles it); yaw=degrees and tilt=degrees
+     set the view; spin=1 starts the turntable; back=0–1 sets how bright back
+     faces stay, normals=0 turns the back-face dimming off; count=N sets the
+     particles; hud=0 hides the panel; reduced=1 previews reduced motion;
+     cursor=x,y parks a pretend mouse there (to check the hover). -->
+<html lang="en" class="has-particles">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Mustang prototype</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Instrument+Serif&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      // Dev servers (python -m http.server, the IDE's) let the browser cache
+      // these, so an edited script could be served stale. Give each local
+      // module a fresh URL per load (through the import map, so nested
+      // imports such as coyote-engine.js's get the same one), and make
+      // same-origin fetches check with the server.
+      {
+        const v = Date.now().toString(36);
+        const local = [
+          "../assets/particles/particles.js",
+          "../assets/particles/story-shapes.js",
+          "../assets/particles/shapes.js",
+          "../assets/particles/mustang-rig.js",
+          "../assets/particles/tyre-smoke.js",
+          "../assets/particles/mustang-scene.js",
+          "./coyote-engine.js",
+          "./engine-build.js",
+        ];
+        const imports = { three: "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js" };
+        for (const path of local) {
+          const url = new URL(path, location.href).href;
+          imports[url] = `${url}?v=${v}`;
+        }
+        document.write(`<script type="importmap">${JSON.stringify({ imports })}<\/script>`);
+        const plain = window.fetch;
+        window.fetch = (input, init = {}) =>
+          new URL(input instanceof Request ? input.url : input, location.href).origin === location.origin
+            ? plain(input, { cache: "no-cache", ...init })
+            : plain(input, init);
+      }
+    </script>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #030712;
+        color: #f3f4f6;
+        font-family: Inter, system-ui, sans-serif;
+        overflow: hidden;
+      }
+      #particles {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      /* Same look and place as .interlude__caption on the live page. */
+      .caption {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 14vh;
+        margin: 0 auto;
+        max-width: 22ch;
+        padding: 0 16px;
+        text-align: center;
+        font-family: "Instrument Serif", Georgia, serif;
+        font-size: clamp(1.75rem, 4vw, 3rem);
+        letter-spacing: -0.02em;
+        line-height: 1.15;
+        color: #fff;
+        text-shadow: 0 2px 24px rgba(3, 7, 18, 0.9);
+        pointer-events: none;
+      }
+      .hud {
+        position: fixed;
+        left: 16px;
+        top: 16px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 14px;
+        align-items: center;
+        max-width: calc(100% - 32px);
+        font-size: 13px;
+      }
+      .hud[hidden] {
+        display: none;
+      }
+      .hud label {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .hud output {
+        font-variant-numeric: tabular-nums;
+        min-width: 4ch;
+        color: #d8b4fe;
+      }
+      .hud button {
+        font: inherit;
+        color: #f3f4f6;
+        background: rgba(76, 29, 149, 0.35);
+        border: 1px solid rgba(216, 180, 254, 0.35);
+        border-radius: 6px;
+        padding: 6px 10px;
+        cursor: pointer;
+      }
+      .hud button:hover {
+        background: rgba(76, 29, 149, 0.6);
+      }
+      .hud button:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+      .hud button[aria-pressed="true"] {
+        background: #6d28d9;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="particles" aria-hidden="true"></canvas>
+    <p class="caption">and then I build it.</p>
+    <div class="hud" id="hud">
+      <label>Yaw <input id="yaw" type="range" min="-180" max="180" step="1" /><output id="yawOut"></output></label>
+      <label>Tilt <input id="tilt" type="range" min="-10" max="45" step="1" /><output id="tiltOut"></output></label>
+      <label>Back faces <input id="back" type="range" min="0" max="1" step="0.01" /><output id="backOut"></output></label>
+      <button id="spin" aria-pressed="false">Spin</button>
+      <button id="normals" aria-pressed="true">Normals</button>
+      <button id="play">Play</button>
+      <button id="hood">Open hood</button>
+      <button id="engine">Drop engine in</button>
+      <button id="drive">Drive off</button>
+      <button id="donut">Donut</button>
+      <button id="away">Scroll away</button>
+    </div>
+
+    <script type="module">
+      import { createParticleField } from "../assets/particles/particles.js";
+      import { dust } from "../assets/particles/story-shapes.js";
+      import { loadMustangScene } from "../assets/particles/mustang-scene.js";
+
+      // The scene itself (sequence, view, smoke) is assets/particles/mustang-scene.js,
+      // shared with the live story; this page adds controls and URL options.
+      const params = new URLSearchParams(location.search);
+      const mobile = matchMedia("(max-width: 640px)").matches;
+      const reducedMotion =
+        params.get("reduced") === "1" || matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const COUNT = +(params.get("count") ?? (mobile ? 24000 : 50000));
+      const CAR = 0, DUST = 1;
+
+      // The Coyote (from the engine session) is git-excluded for now, so it
+      // may not be there; the scene falls back to the stand-in engine.
+      async function coyote(options) {
+        const { coyoteEngine, coyoteEngineBuild } = await import("./coyote-engine.js");
+        const build = await coyoteEngineBuild({ ...options, base: "engine-data/" });
+        const extra = await coyoteEngine({ ...options, base: "engine-data/", build });
+        return { build, extra };
+      }
+      const scene = await loadMustangScene({ count: COUNT, mobile, reducedMotion, data: "../assets/particles/data/", engine: coyote });
+      const { rig } = scene;
+      const field = createParticleField({
+        canvas: document.getElementById("particles"),
+        count: COUNT,
+        shapes: [scene.shape, dust(COUNT)],
+        colors: { lo: "#4c1d95", hi: "#d8b4fe" },
+        reducedMotion,
+      });
+      field.uniforms.uBirth.value = 1;
+      scene.attach(field, CAR);
+      if (params.get("hud") === "0") document.getElementById("hud").hidden = true;
+      if (params.get("drive") === "plain") scene.driveMode = "plain";
+      let state = { from: CAR, to: CAR, t: 0 };
+
+      const $ = (id) => document.getElementById(id);
+      function bind(id, initial, apply, fmt) {
+        const input = $(id), out = $(id + "Out");
+        input.value = initial;
+        const update = () => {
+          apply(parseFloat(input.value));
+          out.value = fmt(parseFloat(input.value));
+        };
+        input.oninput = update;
+        update();
+      }
+      const deg = (v) => `${v}°`;
+      bind("yaw", params.get("yaw") ?? -37, (v) => scene.setYaw((v * Math.PI) / 180), deg);
+      bind("tilt", params.get("tilt") ?? 7, (v) => scene.setTilt((v * Math.PI) / 180), deg);
+      bind("back", params.get("back") ?? 0, (v) => (scene.shape.back = v), (v) => v.toFixed(2));
+
+      const spinBtn = $("spin");
+      function setSpin(on) {
+        scene.setSpin(on);
+        spinBtn.setAttribute("aria-pressed", String(on));
+      }
+      setSpin(params.get("spin") === "1");
+      spinBtn.onclick = () => setSpin(spinBtn.getAttribute("aria-pressed") !== "true");
+
+      const normalsBtn = $("normals");
+      function setNormals(on) {
+        normalsBtn.setAttribute("aria-pressed", String(on));
+        scene.setNormals(on);
+      }
+      setNormals(params.get("normals") !== "0");
+      normalsBtn.onclick = () => setNormals(normalsBtn.getAttribute("aria-pressed") !== "true");
+
+      const hoodBtn = $("hood"), engineBtn = $("engine"), playBtn = $("play"), driveBtn = $("drive"), donutBtn = $("donut");
+      // Labels follow the rig; the hood stays up while the engine is moving.
+      function syncButtons() {
+        const moving = rig.carPhase !== "parked";
+        hoodBtn.textContent = rig.hoodOpen ? "Close hood" : "Open hood";
+        hoodBtn.disabled = rig.engineBusy || moving;
+        engineBtn.textContent = rig.engineIn ? "Lift engine out" : scene.hasBuild ? "Build engine" : "Drop engine in";
+        engineBtn.disabled = rig.engineBusy || scene.playing || moving;
+        playBtn.disabled = scene.playing;
+        playBtn.textContent = moving || rig.engineIn ? "Play again" : "Play";
+        driveBtn.disabled = donutBtn.disabled = scene.playing || moving || rig.enginePhase !== "seated" || !rig.hoodShut;
+      }
+      hoodBtn.onclick = () => (rig.hoodOpen ? rig.closeHood() : rig.openHood(), syncButtons());
+      engineBtn.onclick = () => (rig.engineIn ? rig.removeEngine() : scene.playBuild(), syncButtons());
+      playBtn.onclick = () => (scene.playAll(), syncButtons());
+      driveBtn.onclick = () => (scene.drive("plain"), syncButtons());
+      donutBtn.onclick = () => (scene.drive("donut"), syncButtons());
+      addEventListener("keydown", (e) => {
+        if (e.key === "h") hoodBtn.click();
+        if (e.key === "e") engineBtn.click();
+        if (e.key === "p") playBtn.click();
+      });
+      if (params.get("engine") === "in") rig.snapEngine(true);
+      if (params.get("engine") === "drop") setTimeout(() => rig.installEngine(), 500);
+      if (params.get("engine") === "build") setTimeout(() => engineBtn.click(), 500);
+      if (params.get("play") === "1") setTimeout(() => playBtn.click(), 500);
+      // hood=open, or hood=degrees to hold it at an angle.
+      const hoodParam = params.get("hood");
+      if (hoodParam === "open") rig.snapHood(rig.openAngle);
+      else if (Number.isFinite(parseFloat(hoodParam))) rig.snapHood((parseFloat(hoodParam) * Math.PI) / 180);
+      // hood=cycle opens and closes it on a loop, for watching hands-free.
+      if (hoodParam === "cycle") {
+        const cycle = () => {
+          hoodBtn.click();
+          setTimeout(cycle, rig.hoodOpen ? 4500 : 4000);
+        };
+        setTimeout(cycle, 800);
+      }
+      syncButtons();
+
+      // Stands in for scrolling: morph to dust and back.
+      let morph = null; // { from, to, start }
+      const MORPH_MS = 2500;
+      const awayBtn = $("away");
+      awayBtn.onclick = () => {
+        const gone = state.to === DUST;
+        morph = { from: gone ? DUST : CAR, to: gone ? CAR : DUST, start: performance.now() };
+        awayBtn.textContent = gone ? "Scroll away" : "Scroll back";
+      };
+
+      // cursor=x,y parks a pretend mouse there, to check the hover in a
+      // headless browser.
+      if (params.has("cursor")) {
+        const [cx, cy] = params.get("cursor").split(",").map(Number);
+        setInterval(() => dispatchEvent(new PointerEvent("pointermove", { clientX: cx, clientY: cy, pointerType: "mouse" })), 50);
+      }
+      // at=seconds plays the whole thing to that moment at once and holds it.
+      const holdAt = parseFloat(params.get("at"));
+      if (Number.isFinite(holdAt)) scene.holdAt(holdAt);
+
+      let last = performance.now();
+      (function loop() {
+        const now = performance.now();
+        const dt = Math.min(0.1, (now - last) / 1000);
+        last = now;
+        if (morph) {
+          const t = Math.min(1, (now - morph.start) / MORPH_MS);
+          state = t < 1 ? { from: morph.from, to: morph.to, t } : { from: morph.to, to: morph.to, t: 0 };
+          if (t >= 1) morph = null;
+        }
+        field.setState(state.from, state.to, state.t);
+        scene.frame(dt, state, { hold: Number.isFinite(holdAt) });
+        // For checking a beat from a headless browser's DOM dump.
+        document.documentElement.dataset.engine = scene.describe();
+        syncButtons();
+        requestAnimationFrame(loop);
+      })();
+    </script>
+  </body>
+</html>
